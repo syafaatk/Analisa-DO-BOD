@@ -1,9 +1,11 @@
 <?php
 namespace App\Services;
 use App\Models\AnalysisRun;
+use App\Services\AnalysisAuditService;
 use InvalidArgumentException;
 class AnalysisWorkflowService
 {
+ public function __construct(private AnalysisAuditService $audit){}
  public function transition(AnalysisRun $run,string $to): AnalysisRun
  {
   $from=$run->status ?: 'DRAFT';
@@ -16,6 +18,7 @@ class AnalysisWorkflowService
   ];
   if(!in_array($to,$allowed[$from]??[],true)) throw new InvalidArgumentException("Transition {$from} -> {$to} tidak diizinkan.");
   $run->update(['status'=>$to,'submitted_at'=>$to==='READY_FOR_REVIEW'?now():$run->submitted_at]);
+  $this->audit->log($run,'STATUS_CHANGE',$from,$to);
   return $run->fresh();
  }
 }
