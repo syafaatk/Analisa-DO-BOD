@@ -31,8 +31,7 @@ class AnalysisController extends Controller
   $calc['qc']=$this->bodQc->evaluate($data['a1'],$data['a2'],$data['b1'],$data['b2'],$data['p']);
   if(isset($data['gga_bod'])) $calc['gga']=$this->bodQc->evaluateGga($data['gga_bod']);
   if(isset($data['storage_hours'])) $calc['storage_status']=$this->bodQc->storageStatus($data['storage_hours']);
-  $this->saveRun($data['sample_code'],'BOD5','SNI 6989.72:2009',$data,$calc);
-  $run=AnalysisRun::latest('id')->first();
+  $run=$this->saveRun($data['sample_code'],'BOD5','SNI 6989.72:2009',$data,$calc);
   foreach(($data['dilutions']??[]) as $idx=>$d){if(!isset($d['do_initial'],$d['do_final']))continue;$p=$d['final_volume_ml']>0?($d['sample_volume_ml']/$d['final_volume_ml']):0;$eval=$this->bodQc->evaluateDilution($d['do_initial'],$d['do_final'],$d['incubation_temperature']??20,$d['incubation_hours']??120);BodDilution::create(array_merge($d,['analysis_run_id'=>$run->id,'p'=>$p,'do_depletion'=>$d['do_initial']-$d['do_final'],'dilution_code'=>'D'.($idx+1),'selection_status'=>$eval['status']]));}
   if(isset($data['gga_bod'])){ $g=$this->bodQc->evaluateGga($data['gga_bod']); BodControl::create(['analysis_run_id'=>$run->id,'control_type'=>'GGA','control_code'=>'GGA','bod_result'=>$data['gga_bod'],'expected_min'=>$g['lower'],'expected_max'=>$g['upper'],'status'=>$g['status']]); }
   return back()->with('bod_result',$calc)->withInput();
@@ -43,7 +42,7 @@ class AnalysisController extends Controller
   return back()->with('uncertainty_result',$this->calc->topDownUncertainty($data['precision_sd'],$data['precision_n'],$data['bias_sd']??null,$data['bias_n']??null,$data['coverage_factor']))->withInput();
  }
 
- private function saveRun(string $sample,string $parameter,string $method,array $inputs,array $calculation):void{
-  AnalysisRun::create(['sample_code'=>$sample,'parameter'=>$parameter,'method_version'=>$method,'analyst'=>session('lab_user.name'),'analysed_at'=>now(),'inputs'=>$inputs,'calculation'=>$calculation]);
+ private function saveRun(string $sample,string $parameter,string $method,array $inputs,array $calculation): AnalysisRun{
+  return AnalysisRun::create(['sample_code'=>$sample,'parameter'=>$parameter,'method_version'=>$method,'analyst'=>session('lab_user.name'),'analysed_at'=>now(),'inputs'=>$inputs,'calculation'=>$calculation,'status'=>'DRAFT']);
  }
 }
