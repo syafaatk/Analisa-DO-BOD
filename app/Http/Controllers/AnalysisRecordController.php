@@ -10,7 +10,7 @@ class AnalysisRecordController extends Controller {
  public function update(Request $request,AnalysisRun $analysis, LaboratoryCalculationService $calc, AnalysisAuditService $audit){
   if($analysis->status==='APPROVED') abort(403);
   $data=$request->validate(['sample_code'=>'required|string|max:100','notes'=>'nullable|string']);
-  $old=$analysis->inputs ?? [];
+  $old=$analysis->inputs ?? []; $fromStatus=$analysis->status ?: 'DRAFT';
   if($analysis->parameter==='DO'){
    $data += $request->validate(['thiosulfate_ml'=>'required|numeric|min:0.000001','thiosulfate_duplo_ml'=>'nullable|numeric|min:0.000001','normality'=>'required|numeric|min:0.000001','winkler_volume_ml'=>'required|numeric|min:2.000001','reagent_mnso4_ml'=>'required|numeric|min:0','reagent_alkali_ml'=>'required|numeric|min:0','aliquot_ml'=>'required|numeric|min:0.000001']);
    $newCalc=$calc->dissolvedOxygen($data['thiosulfate_ml'],$data['normality'],$data['winkler_volume_ml'],$data['reagent_mnso4_ml'],$data['reagent_alkali_ml'],$data['aliquot_ml']);
@@ -21,7 +21,7 @@ class AnalysisRecordController extends Controller {
   }
   $inputs=$data; unset($inputs['notes']);
   $analysis->update(['sample_code'=>$data['sample_code'],'notes'=>$data['notes']??null,'inputs'=>$inputs,'calculation'=>$newCalc,'status'=>'DRAFT','submitted_at'=>null]);
-  $audit->log($analysis,'EDIT',$analysis->status,'DRAFT',['before'=>$old,'after'=>$inputs]);
+  $audit->log($analysis,'EDIT',$fromStatus,'DRAFT',['before'=>$old,'after'=>$inputs]);
   return redirect()->route('analysis.show',$analysis)->with('success','Data analisis diperbarui dan dikembalikan ke DRAFT.');
  }
  public function destroy(AnalysisRun $analysis){if($analysis->status==='APPROVED') abort(403);$analysis->delete();return redirect()->route('analysis.index')->with('success','Data analisis dihapus.');}
