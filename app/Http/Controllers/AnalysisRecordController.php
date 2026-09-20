@@ -24,5 +24,5 @@ class AnalysisRecordController extends Controller {
   $audit->log($analysis,'EDIT',$fromStatus,'DRAFT',['before'=>$old,'after'=>$inputs]);
   return redirect()->route('analysis.show',$analysis)->with('success','Data analisis diperbarui dan dikembalikan ke DRAFT.');
  }
- public function destroy(AnalysisRun $analysis){if($analysis->status==='APPROVED') abort(403);$analysis->delete();return redirect()->route('analysis.index')->with('success','Data analisis dihapus.');}
+ public function destroy(AnalysisRun $analysis, AnalysisAuditService $audit){if($analysis->status==='APPROVED') abort(403);$audit->log($analysis,'DELETE',$analysis->status,null);$analysis->delete();return redirect()->route('analysis.index')->with('success','Data analisis dihapus.');}
 }
