@@ -15,7 +15,7 @@ return new class extends Migration {
   Schema::table('lab_users',function(Blueprint $t){$t->foreignId('laboratory_id')->nullable()->after('id')->index();});
   DB::table('lab_users')->update(['laboratory_id'=>$labId]);
   foreach([['method_versions','code'],['samples','sample_code'],['instruments','code'],['reagents','code'],['uncertainty_models','code']] as [$table,$column]){
-   Schema::table($table,function(Blueprint $t) use($column){$t->dropUnique($t->getTable().'_'.$column.'_unique');});
+   Schema::table($table,function(Blueprint $t) use($table,$column){$t->dropUnique($table.'_'.$column.'_unique');});
    Schema::table($table,function(Blueprint $t) use($column){$t->unique(['laboratory_id',$column]);});
   }
   Schema::table('lab_users',function(Blueprint $t){$t->unique(['laboratory_id','email']);});
