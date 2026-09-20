@@ -8,3 +8,6 @@ Route::get('/analysis/{id}/report',[ReportController::class,'show']);
 
 use App\Http\Controllers\SampleController;
 Route::apiResource('/samples',SampleController::class)->only(['index','store','show']);
+
+use App\Http\Controllers\DashboardController;
+Route::get('/dashboard', [DashboardController::class,'index']);
