@@ -17,3 +17,6 @@ Route::post('/analysis/{analysis}/review',[ReviewController::class,'store']);
 
 use App\Http\Controllers\AnalysisStatusController;
 Route::patch('/analysis/{analysis}/status',[AnalysisStatusController::class,'update']);
+
+use App\Http\Controllers\AnalysisWorkflowController;
+Route::patch('/analysis/{analysis}/transition',[AnalysisWorkflowController::class,'transition']);
