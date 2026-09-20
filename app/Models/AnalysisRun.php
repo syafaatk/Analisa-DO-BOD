@@ -1,9 +1,11 @@
 <?php
 namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use App\Models\Concerns\BelongsToLaboratory;
 class AnalysisRun extends Model
 {
+ use HasUuids;
  use BelongsToLaboratory;
  public function bodDilutions(){return $this->hasMany(BodDilution::class,'analysis_run_id');}
  public function bodControls(){return $this->hasMany(BodControl::class,'analysis_run_id');}
