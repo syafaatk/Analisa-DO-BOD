@@ -17,7 +17,7 @@ class AnalysisController extends Controller
   $data=$request->validate(['sample_code'=>'required|string|max:100','thiosulfate_ml'=>'required|numeric|min:0.000001','thiosulfate_duplo_ml'=>'nullable|numeric|min:0.000001','normality'=>'required|numeric|min:0.000001','winkler_volume_ml'=>'required|numeric|min:2.000001','reagent_mnso4_ml'=>'required|numeric|min:0','reagent_alkali_ml'=>'required|numeric|min:0','aliquot_ml'=>'required|numeric|min:0.000001']);
   $calc=$this->calc->dissolvedOxygen($data['thiosulfate_ml'],$data['normality'],$data['winkler_volume_ml'],$data['reagent_mnso4_ml'],$data['reagent_alkali_ml'],$data['aliquot_ml']);
   $duplo=null; if(!empty($data['thiosulfate_duplo_ml'])) { $duplo=$this->calc->dissolvedOxygen($data['thiosulfate_duplo_ml'],$data['normality'],$data['winkler_volume_ml'],$data['reagent_mnso4_ml'],$data['reagent_alkali_ml'],$data['aliquot_ml']); $calc['duplo']=$duplo; $calc['rpd']=$this->calc->rpd($calc['result'],$duplo['result']); $calc['qc_status']=$calc['rpd']<=10?'PASS':'REVIEW'; } $this->saveRun($data['sample_code'],'DO','SNI 06-6989.14-2004',$data,$calc);
-  return back()->with('do_result',$calc)->withInput();
+  return $request->expectsJson() ? response()->json(['message'=>'Analisis DO berhasil disimpan.','data'=>$calc],201) : back()->with('do_result',$calc)->withInput();
  }
 
  public function calculateBod(Request $request){
@@ -34,7 +34,7 @@ class AnalysisController extends Controller
   $run=$this->saveRun($data['sample_code'],'BOD5','SNI 6989.72:2009',$data,$calc);
   foreach(($data['dilutions']??[]) as $idx=>$d){if(!isset($d['do_initial'],$d['do_final']))continue;$p=$d['final_volume_ml']>0?($d['sample_volume_ml']/$d['final_volume_ml']):0;$eval=$this->bodQc->evaluateDilution($d['do_initial'],$d['do_final'],$d['incubation_temperature']??20,$d['incubation_hours']??120);BodDilution::create(array_merge($d,['analysis_run_id'=>$run->id,'p'=>$p,'do_depletion'=>$d['do_initial']-$d['do_final'],'dilution_code'=>'D'.($idx+1),'selection_status'=>$eval['status']]));}
   if(isset($data['gga_bod'])){ $g=$this->bodQc->evaluateGga($data['gga_bod']); BodControl::create(['analysis_run_id'=>$run->id,'control_type'=>'GGA','control_code'=>'GGA','bod_result'=>$data['gga_bod'],'expected_min'=>$g['lower'],'expected_max'=>$g['upper'],'status'=>$g['status']]); }
-  return back()->with('bod_result',$calc)->withInput();
+  return $request->expectsJson() ? response()->json(['message'=>'Analisis BOD₅ berhasil disimpan.','data'=>$calc],201) : back()->with('bod_result',$calc)->withInput();
  }
 
  public function calculateUncertainty(Request $request){
