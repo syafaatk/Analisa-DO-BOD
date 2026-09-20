@@ -16,7 +16,7 @@ class UserManagementController extends Controller {
   return back()->with('success','User berhasil diperbarui.');
  }
  public function destroy(Request $r,LabUser $user){
-  if((int)$r->session()->get('lab_user.id')===(int)$user->id) return back()->with('error','User yang sedang login tidak dapat dihapus.');
+  if((string)$r->session()->get('lab_user.id')===(string)$user->id) return back()->with('error','User yang sedang login tidak dapat dihapus.');
   $user->delete(); return back()->with('success','User dihapus.');
  }
 }
