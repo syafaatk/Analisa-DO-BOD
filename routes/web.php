@@ -17,3 +17,12 @@ Route::delete('/masters/reagents/{reagent}', [MasterController::class,'deleteRea
 Route::get('/masters/instruments', [MasterController::class,'instruments'])->name('masters.instruments');
 Route::post('/masters/instruments', [MasterController::class,'storeInstrument'])->name('masters.instruments.store');
 Route::delete('/masters/instruments/{instrument}', [MasterController::class,'deleteInstrument'])->name('masters.instruments.delete');
+
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\UserManagementController;
+Route::get('/login',[AuthController::class,'showLogin'])->name('login');
+Route::post('/login',[AuthController::class,'login'])->name('login.submit');
+Route::post('/logout',[AuthController::class,'logout'])->name('logout');
+Route::middleware('lab.auth')->group(function(){
+ Route::middleware('role:admin')->prefix('admin')->group(function(){Route::get('/users',[UserManagementController::class,'index'])->name('admin.users');Route::post('/users',[UserManagementController::class,'store'])->name('admin.users.store');Route::put('/users/{user}',[UserManagementController::class,'update'])->name('admin.users.update');Route::delete('/users/{user}',[UserManagementController::class,'destroy'])->name('admin.users.delete');});
+});
