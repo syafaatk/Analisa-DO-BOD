@@ -3,7 +3,7 @@
 <title>Analisa DO & BOD</title>
 <style>
 body{font-family:system-ui;margin:0;background:#f5f7fb;color:#172033}.wrap{max-width:1180px;margin:32px auto;padding:0 18px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:18px}.card{background:#fff;border-radius:14px;padding:22px;box-shadow:0 4px 18px #0000000d}label{display:block;font-size:13px;margin-top:10px}input{width:100%;box-sizing:border-box;padding:9px;border:1px solid #ccd3df;border-radius:8px}button{margin-top:15px;padding:10px 15px;border:0;border-radius:8px;background:#182b49;color:#fff;cursor:pointer}.result{margin-top:15px;padding:12px;border-radius:8px;background:#eef6ff}.err{background:#fff0f0;color:#a11;padding:12px;border-radius:8px}.muted{color:#667085;font-size:13px}
-</style></head><body><div class="wrap"><h1>Analisa DO & BOD5</h1><p class="muted">Laboratory calculator — SNI 06-6989.14-2004, SNI 6989.72:2009, dan top-down uncertainty.</p>
+</style></head><body><div class="wrap"><h1>Analisa DO & BOD5</h1><p class="muted">Laboratory Analysis — DO titrasi · BOD₅ · QC · Top-Down Measurement Uncertainty</p>
 @if($errors->any())<div class="err">@foreach($errors->all() as $e)<div>{{ $e }}</div>@endforeach</div>@endif
 <div class="grid">
 <section class="card"><h2>1. DO — Titrasi</h2><form method="post" action="{{route('analysis.do')}}">@csrf
