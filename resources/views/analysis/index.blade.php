@@ -6,11 +6,11 @@ body{font-family:system-ui;margin:0;background:#f5f7fb;color:#172033}.wrap{max-w
 </style></head><body><div class="wrap"><h1>Analisa DO & BOD5</h1><p class="muted">Laboratory Analysis — DO titrasi · BOD₅ · QC · Top-Down Measurement Uncertainty</p>
 @if($errors->any())<div class="err">@foreach($errors->all() as $e)<div>{{ $e }}</div>@endforeach</div>@endif
 <div class="grid">
-<section class="card"><h2>1. DO — Titrasi</h2><form method="post" action="{{route('analysis.do')}}">@csrf
+<section class="card"><h2>1. DO — Titrasi</h2><form method="post" action="{{route('analysis.do')}}">@csrf<label>Kode contoh<input name="sample_code" value="{{old('sample_code')}}" required></label>
 @foreach([['thiosulfate_ml','V Na2S2O3 (mL)'],['normality','Normalitas (N)'],['winkler_volume_ml','Volume botol Winkler (mL)'],['reagent_mnso4_ml','MnSO4 (mL)'],['reagent_alkali_ml','Alkali iodida azida (mL)'],['aliquot_ml','Aliquot titrasi (mL)']] as $f)<label>{{$f[1]}}<input name="{{$f[0]}}" type="number" step="any" value="{{old($f[0],$f[0]==='reagent_mnso4_ml'||$f[0]==='reagent_alkali_ml'?1:($f[0]==='aliquot_ml'?50:''))}}" required></label>@endforeach
 <button>Hitung DO</button></form>
 @if(session('do_result'))<div class="result"><b>DO = {{session('do_result.result')}} mg/L</b><br>Faktor F = {{session('do_result.factor')}}<br><small>{{session('do_result.formula')}}</small></div>@endif</section>
-<section class="card"><h2>2. BOD₅</h2><form method="post" action="{{route('analysis.bod')}}">@csrf
+<section class="card"><h2>2. BOD₅</h2><form method="post" action="{{route('analysis.bod')}}">@csrf<label>Kode contoh<input name="sample_code" value="{{old('sample_code')}}" required></label>
 @foreach([['a1','A1 — DO hari 0'],['a2','A2 — DO hari 5'],['b1','B1 — blanko hari 0'],['b2','B2 — blanko hari 5'],['vb','VB — volume bibit blanko (mL)'],['vc','Vc — volume bibit contoh (mL)'],['p','P — V1/V2']] as $f)<label>{{$f[1]}}<input name="{{$f[0]}}" type="number" step="any" value="{{old($f[0])}}" required></label>@endforeach
 <button>Hitung BOD₅</button></form>
 @if(session('bod_result'))<div class="result"><b>BOD₅ = {{session('bod_result.result')}} mg/L</b><br>Konsumsi sampel = {{session('bod_result.sample_depletion')}} mg/L<br>Koreksi bibit = {{session('bod_result.seed_correction')}} mg/L</div>@endif</section>
