@@ -2,21 +2,24 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UncertaintyController;
 use App\Http\Controllers\ReportController;
-Route::post('/uncertainty/calculate',[UncertaintyController::class,'calculate']);
-Route::post('/uncertainty/statistics',[UncertaintyController::class,'statistics']);
-Route::get('/analysis/{id}/report',[ReportController::class,'show']);
-
 use App\Http\Controllers\SampleController;
-Route::apiResource('/samples',SampleController::class)->only(['index','store','show']);
-
 use App\Http\Controllers\DashboardController;
-Route::get('/dashboard', [DashboardController::class,'index']);
-
 use App\Http\Controllers\ReviewController;
-Route::post('/analysis/{analysis}/review',[ReviewController::class,'store']);
-
 use App\Http\Controllers\AnalysisStatusController;
-Route::patch('/analysis/{analysis}/status',[AnalysisStatusController::class,'update']);
-
 use App\Http\Controllers\AnalysisWorkflowController;
-Route::patch('/analysis/{analysis}/transition',[AnalysisWorkflowController::class,'transition']);
+
+/*
+ | Legacy JSON endpoints are session-protected because the application uses
+ | laboratory session context rather than stateless API tokens.
+ | React uses the web routes for CSRF-protected same-origin mutations.
+*/
+Route::middleware(['web','lab.auth','lab.context'])->group(function () {
+    Route::post('/uncertainty/calculate',[UncertaintyController::class,'calculate']);
+    Route::post('/uncertainty/statistics',[UncertaintyController::class,'statistics']);
+    Route::get('/analysis/{id}/report',[ReportController::class,'show']);
+    Route::apiResource('/samples',SampleController::class)->only(['index','store','show']);
+    Route::get('/dashboard',[DashboardController::class,'index']);
+    Route::post('/analysis/{analysis}/review',[ReviewController::class,'store']);
+    Route::patch('/analysis/{analysis}/status',[AnalysisStatusController::class,'update']);
+    Route::patch('/analysis/{analysis}/transition',[AnalysisWorkflowController::class,'transition']);
+});
