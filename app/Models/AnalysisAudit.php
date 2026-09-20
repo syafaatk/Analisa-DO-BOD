@@ -1,8 +1,10 @@
 <?php
 namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use App\Models\Concerns\BelongsToLaboratory;
 class AnalysisAudit extends Model {
+ use HasUuids;
  use BelongsToLaboratory;
  protected $fillable=['laboratory_id','analysis_run_id','actor','action','from_status','to_status','changes','notes'];
  protected $casts=['changes'=>'array'];
