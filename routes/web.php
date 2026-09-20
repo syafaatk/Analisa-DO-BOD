@@ -7,6 +7,7 @@ use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\AnalysisRecordController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\LaboratoryManagementController;
 
 Route::get('/login',[AuthController::class,'showLogin'])->name('login');
 Route::post('/login',[AuthController::class,'login'])->name('login.submit');
@@ -36,6 +37,8 @@ Route::middleware('lab.auth')->group(function(){
  Route::get('/masters/instruments',[MasterController::class,'instruments'])->name('masters.instruments');
  Route::post('/masters/instruments',[MasterController::class,'storeInstrument'])->name('masters.instruments.store');
  Route::delete('/masters/instruments/{instrument}',[MasterController::class,'deleteInstrument'])->name('masters.instruments.delete');
+
+ Route::middleware('role:super_admin')->prefix('superadmin')->group(function(){ Route::get('/laboratories',[LaboratoryManagementController::class,'index'])->name('superadmin.laboratories'); Route::post('/laboratories',[LaboratoryManagementController::class,'store'])->name('superadmin.laboratories.store'); Route::put('/laboratories/{laboratory}',[LaboratoryManagementController::class,'update'])->name('superadmin.laboratories.update'); });
 
  Route::middleware('role:admin')->prefix('admin')->group(function(){
   Route::get('/users',[UserManagementController::class,'index'])->name('admin.users');
