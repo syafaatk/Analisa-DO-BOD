@@ -13,7 +13,7 @@ WORKDIR /app
 COPY composer.json composer.lock* ./
 RUN composer install --no-dev --prefer-dist --no-interaction --no-progress --optimize-autoloader
 
-FROM php:8.3-cli-alpine
+FROM php:8.4-cli-alpine
 WORKDIR /var/www/html
 RUN apk add --no-cache libzip-dev oniguruma-dev icu-dev libxml2-dev \
     && docker-php-ext-install pdo_mysql mbstring bcmath intl zip xml
