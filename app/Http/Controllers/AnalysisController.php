@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 class AnalysisController extends Controller
 {
  public function __construct(private LaboratoryCalculationService $calc){}
- public function index(){return view('analysis.index',['recent'=>AnalysisRun::latest()->limit(10)->get()]);}
+ public function index(){return view('analysis.index',['recent'=>AnalysisRun::latest()->limit(10)->get(),'doRuns'=>AnalysisRun::where('parameter','DO')->latest()->paginate(10,['*'],'do_page'),'bodRuns'=>AnalysisRun::where('parameter','BOD5')->latest()->paginate(10,['*'],'bod_page')]);}
 
  public function calculateDo(Request $request){
   $data=$request->validate(['sample_code'=>'required|string|max:100','thiosulfate_ml'=>'required|numeric|min:0.000001','thiosulfate_duplo_ml'=>'nullable|numeric|min:0.000001','normality'=>'required|numeric|min:0.000001','winkler_volume_ml'=>'required|numeric|min:2.000001','reagent_mnso4_ml'=>'required|numeric|min:0','reagent_alkali_ml'=>'required|numeric|min:0','aliquot_ml'=>'required|numeric|min:0.000001']);
