@@ -32,9 +32,9 @@ Route::middleware('lab.auth')->group(function(){
 });
 
 use App\Http\Controllers\AnalysisRecordController;
-use App\Http\Controllers\ReviewController;
 Route::middleware('lab.auth')->group(function(){
  Route::get('/analysis/{analysis}',[AnalysisRecordController::class,'show'])->name('analysis.show');
+ Route::post('/analysis/{analysis}/submit',[AnalysisRecordController::class,'submit'])->middleware('role:analyst,admin')->name('analysis.submit');
  Route::get('/analysis/{analysis}/edit',[AnalysisRecordController::class,'edit'])->middleware('role:analyst,admin')->name('analysis.edit');
  Route::put('/analysis/{analysis}',[AnalysisRecordController::class,'update'])->middleware('role:analyst,admin')->name('analysis.update');
  Route::delete('/analysis/{analysis}',[AnalysisRecordController::class,'destroy'])->middleware('role:analyst,admin')->name('analysis.delete');
