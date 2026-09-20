@@ -4,8 +4,10 @@ use App\Models\AnalysisRun;
 use Illuminate\Http\Request;
 use App\Services\LaboratoryCalculationService;
 use App\Services\AnalysisAuditService;
+use App\Services\AnalysisWorkflowService;
 class AnalysisRecordController extends Controller {
- public function show(AnalysisRun $analysis){return view('analysis.show',['analysis'=>$analysis]);}
+ public function show(AnalysisRun $analysis){$analysis->load([]); $audits=\App\Models\AnalysisAudit::where('analysis_run_id',$analysis->id)->latest()->get(); return view('analysis.show',['analysis'=>$analysis,'audits'=>$audits]);}
+ public function submit(AnalysisRun $analysis, AnalysisWorkflowService $workflow){$workflow->transition($analysis,'READY_FOR_REVIEW'); return redirect()->route('analysis.show',$analysis)->with('success','Analisis dikirim untuk review.');}
  public function edit(AnalysisRun $analysis){if($analysis->status==='APPROVED') abort(403,'Analisis yang sudah approved tidak dapat diedit.'); return view('analysis.edit',['analysis'=>$analysis]);}
  public function update(Request $request,AnalysisRun $analysis, LaboratoryCalculationService $calc, AnalysisAuditService $audit){
   if($analysis->status==='APPROVED') abort(403);
