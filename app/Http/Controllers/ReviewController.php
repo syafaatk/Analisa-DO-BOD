@@ -7,7 +7,7 @@ class ReviewController extends Controller
 {
  public function __construct(private ApprovalService $service){}
  public function store(Request $request,AnalysisRun $analysis){
-  $data=$request->validate(['reviewer'=>'required|string|max:255','decision'=>'required|in:APPROVED,REJECTED,REVISION_REQUIRED','comments'=>'nullable|string']);
-  return response()->json($this->service->review($analysis,$data['reviewer'],$data['decision'],$data['comments']??null));
+  $data=$request->validate(['decision'=>'required|in:APPROVED,REJECTED,REVISION_REQUIRED','comments'=>'nullable|string']); $data['reviewer']=session('lab_user.name');
+  return redirect()->route('analysis.show',$analysis)->with('success','Review tersimpan.'); // ($analysis,$data['reviewer'],$data['decision'],$data['comments']??null);
  }
 }
