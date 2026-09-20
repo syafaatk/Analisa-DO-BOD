@@ -20,7 +20,7 @@ RUN apk add --no-cache libzip-dev oniguruma-dev icu-dev libxml2-dev \
 COPY --from=vendor /app/vendor ./vendor
 COPY . .
 COPY --from=frontend /app/public/build ./public/build
-RUN mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/logs \
+RUN mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R ug+rwx storage bootstrap/cache
 EXPOSE 8080
