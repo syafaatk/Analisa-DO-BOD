@@ -14,3 +14,6 @@ Route::get('/dashboard', [DashboardController::class,'index']);
 
 use App\Http\Controllers\ReviewController;
 Route::post('/analysis/{analysis}/review',[ReviewController::class,'store']);
+
+use App\Http\Controllers\AnalysisStatusController;
+Route::patch('/analysis/{analysis}/status',[AnalysisStatusController::class,'update']);
