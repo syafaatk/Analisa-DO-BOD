@@ -8,12 +8,13 @@ use App\Http\Controllers\AnalysisRecordController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\LaboratoryManagementController;
+use App\Http\Controllers\LaboratoryContextController;
 
 Route::get('/login',[AuthController::class,'showLogin'])->name('login');
 Route::post('/login',[AuthController::class,'login'])->name('login.submit');
 Route::post('/logout',[AuthController::class,'logout'])->name('logout');
 
-Route::middleware('lab.auth')->group(function(){
+Route::middleware(['lab.auth','lab.context'])->group(function(){
  Route::get('/',fn()=>redirect()->route('analysis.index'));
  Route::get('/analysis',[AnalysisController::class,'index'])->name('analysis.index');
  Route::post('/analysis/do',[AnalysisController::class,'calculateDo'])->name('analysis.do');
@@ -38,7 +39,7 @@ Route::middleware('lab.auth')->group(function(){
  Route::post('/masters/instruments',[MasterController::class,'storeInstrument'])->name('masters.instruments.store');
  Route::delete('/masters/instruments/{instrument}',[MasterController::class,'deleteInstrument'])->name('masters.instruments.delete');
 
- Route::middleware('role:super_admin')->prefix('superadmin')->group(function(){ Route::get('/laboratories',[LaboratoryManagementController::class,'index'])->name('superadmin.laboratories'); Route::post('/laboratories',[LaboratoryManagementController::class,'store'])->name('superadmin.laboratories.store'); Route::put('/laboratories/{laboratory}',[LaboratoryManagementController::class,'update'])->name('superadmin.laboratories.update'); });
+ Route::middleware('role:super_admin')->prefix('superadmin')->group(function(){ Route::get('/laboratories',[LaboratoryManagementController::class,'index'])->name('superadmin.laboratories'); Route::post('/laboratories',[LaboratoryManagementController::class,'store'])->name('superadmin.laboratories.store'); Route::put('/laboratories/{laboratory}',[LaboratoryManagementController::class,'update'])->name('superadmin.laboratories.update'); Route::post('/laboratories/{laboratory}/switch',[LaboratoryContextController::class,'switch'])->name('superadmin.laboratories.switch'); Route::post('/laboratories/clear-context',[LaboratoryContextController::class,'clear'])->name('superadmin.laboratories.clear'); });
 
  Route::middleware('role:admin')->prefix('admin')->group(function(){
   Route::get('/users',[UserManagementController::class,'index'])->name('admin.users');
