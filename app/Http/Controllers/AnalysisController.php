@@ -11,9 +11,9 @@ class AnalysisController extends Controller
  public function index(){return view('analysis.index',['recent'=>AnalysisRun::latest()->limit(10)->get()]);}
 
  public function calculateDo(Request $request){
-  $data=$request->validate(['sample_code'=>'required|string|max:100','thiosulfate_ml'=>'required|numeric|min:0.000001','normality'=>'required|numeric|min:0.000001','winkler_volume_ml'=>'required|numeric|min:2.000001','reagent_mnso4_ml'=>'required|numeric|min:0','reagent_alkali_ml'=>'required|numeric|min:0','aliquot_ml'=>'required|numeric|min:0.000001']);
+  $data=$request->validate(['sample_code'=>'required|string|max:100','thiosulfate_ml'=>'required|numeric|min:0.000001','thiosulfate_duplo_ml'=>'nullable|numeric|min:0.000001','normality'=>'required|numeric|min:0.000001','winkler_volume_ml'=>'required|numeric|min:2.000001','reagent_mnso4_ml'=>'required|numeric|min:0','reagent_alkali_ml'=>'required|numeric|min:0','aliquot_ml'=>'required|numeric|min:0.000001']);
   $calc=$this->calc->dissolvedOxygen($data['thiosulfate_ml'],$data['normality'],$data['winkler_volume_ml'],$data['reagent_mnso4_ml'],$data['reagent_alkali_ml'],$data['aliquot_ml']);
-  $this->saveRun($data['sample_code'],'DO','SNI 06-6989.14-2004',$data,$calc);
+  $duplo=null; if(!empty($data['thiosulfate_duplo_ml'])) { $duplo=$this->calc->dissolvedOxygen($data['thiosulfate_duplo_ml'],$data['normality'],$data['winkler_volume_ml'],$data['reagent_mnso4_ml'],$data['reagent_alkali_ml'],$data['aliquot_ml']); $calc['duplo']=$duplo; $calc['rpd']=$this->calc->rpd($calc['result'],$duplo['result']); $calc['qc_status']=$calc['rpd']<=10?'PASS':'REVIEW'; } $this->saveRun($data['sample_code'],'DO','SNI 06-6989.14-2004',$data,$calc);
   return back()->with('do_result',$calc)->withInput();
  }
 
@@ -30,6 +30,6 @@ class AnalysisController extends Controller
  }
 
  private function saveRun(string $sample,string $parameter,string $method,array $inputs,array $calculation):void{
-  AnalysisRun::create(['sample_code'=>$sample,'parameter'=>$parameter,'method_version'=>$method,'analyst'=>auth()->user()->name??null,'analysed_at'=>now(),'inputs'=>$inputs,'calculation'=>$calculation]);
+  AnalysisRun::create(['sample_code'=>$sample,'parameter'=>$parameter,'method_version'=>$method,'analyst'=>session('lab_user.name'),'analysed_at'=>now(),'inputs'=>$inputs,'calculation'=>$calculation]);
  }
 }
