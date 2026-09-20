@@ -2,7 +2,7 @@
 namespace App\Services;
 use App\Models\AnalysisRun;
 class ReportDataService {
- public function result(int $id): array {
+ public function result(string $id): array {
   $run=AnalysisRun::with(['bodDilutions','bodControls','audits'])->findOrFail($id);
   return [
    'id'=>$run->id,
