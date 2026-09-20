@@ -3,5 +3,5 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 class DatabaseSeeder extends Seeder
 {
- public function run(): void { $this->call([MethodVersionSeeder::class, LabUserSeeder::class]); }
+ public function run(): void { $this->call([LaboratorySeeder::class, MethodVersionSeeder::class, LabUserSeeder::class]); }
 }
