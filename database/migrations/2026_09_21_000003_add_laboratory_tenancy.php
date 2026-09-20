@@ -2,17 +2,18 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
  public function up(): void {
-  Schema::create('laboratories',function(Blueprint $t){$t->id();$t->string('code')->unique();$t->string('name');$t->boolean('active')->default(true);$t->text('address')->nullable();$t->string('phone')->nullable();$t->string('email')->nullable();$t->timestamps();});
-  $labId=DB::table('laboratories')->insertGetId(['code'=>'LAB-DEFAULT','name'=>'Default Laboratory','active'=>true,'created_at'=>now(),'updated_at'=>now()]);
+  Schema::create('laboratories',function(Blueprint $t){$t->uuid('id')->primary();$t->string('code')->unique();$t->string('name');$t->boolean('active')->default(true);$t->text('address')->nullable();$t->string('phone')->nullable();$t->string('email')->nullable();$t->timestamps();});
+  $labId=(string) Str::uuid(); DB::table('laboratories')->insertGetId(['code'=>'LAB-DEFAULT','name'=>'Default Laboratory','active'=>true,'created_at'=>now(),'updated_at'=>now()]);
   $tables=['analysis_runs','method_versions','samples','instruments','reagents','qc_results','uncertainty_models','uncertainty_components','bod_dilutions','qc_observations','bod_controls','analysis_reviews','analysis_audits'];
   foreach($tables as $table){
-   Schema::table($table,function(Blueprint $t){$t->foreignId('laboratory_id')->nullable()->after('id')->index();});
+   Schema::table($table,function(Blueprint $t){$t->foreignUuid('laboratory_id')->nullable()->after('id')->index();});
    DB::table($table)->update(['laboratory_id'=>$labId]);
   }
-  Schema::table('lab_users',function(Blueprint $t){$t->foreignId('laboratory_id')->nullable()->after('id')->index();});
+  Schema::table('lab_users',function(Blueprint $t){$t->foreignUuid('laboratory_id')->nullable()->after('id')->index();});
   DB::table('lab_users')->update(['laboratory_id'=>$labId]);
   foreach([['method_versions','code'],['samples','sample_code'],['instruments','code'],['reagents','code'],['uncertainty_models','code']] as [$table,$column]){
    Schema::table($table,function(Blueprint $t) use($table,$column){$t->dropUnique($table.'_'.$column.'_unique');});
