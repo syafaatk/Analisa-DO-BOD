@@ -5,8 +5,6 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SampleController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ReviewController;
-use App\Http\Controllers\AnalysisStatusController;
-use App\Http\Controllers\AnalysisWorkflowController;
 
 /*
  | Legacy JSON endpoints are session-protected because the application uses
@@ -19,7 +17,5 @@ Route::middleware(['web','lab.auth','lab.context'])->group(function () {
     Route::get('/analysis/{id}/report',[ReportController::class,'show']);
     Route::apiResource('/samples',SampleController::class)->only(['index','store','show']);
     Route::get('/dashboard',[DashboardController::class,'index']);
-    Route::post('/analysis/{analysis}/review',[ReviewController::class,'store']);
-    Route::patch('/analysis/{analysis}/status',[AnalysisStatusController::class,'update']);
-    Route::patch('/analysis/{analysis}/transition',[AnalysisWorkflowController::class,'transition']);
+    Route::post('/analysis/{analysis}/review',[ReviewController::class,'store'])->middleware('role:supervisor,admin');
 });
