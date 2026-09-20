@@ -1,13 +1,16 @@
 <?php
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AnalysisController;
+Route::middleware('lab.auth')->group(function(){
 Route::get('/', fn () => redirect()->route('analysis.index'));
 Route::get('/analysis', [AnalysisController::class,'index'])->name('analysis.index');
 Route::post('/analysis/do', [AnalysisController::class,'calculateDo'])->name('analysis.do');
 Route::post('/analysis/bod', [AnalysisController::class,'calculateBod'])->name('analysis.bod');
 Route::post('/analysis/uncertainty', [AnalysisController::class,'calculateUncertainty'])->name('analysis.uncertainty');
+});
 
 use App\Http\Controllers\MasterController;
+Route::middleware('lab.auth')->group(function(){
 Route::get('/masters/samples', [MasterController::class,'samples'])->name('masters.samples');
 Route::post('/masters/samples', [MasterController::class,'storeSample'])->name('masters.samples.store');
 Route::delete('/masters/samples/{sample}', [MasterController::class,'deleteSample'])->name('masters.samples.delete');
@@ -17,6 +20,7 @@ Route::delete('/masters/reagents/{reagent}', [MasterController::class,'deleteRea
 Route::get('/masters/instruments', [MasterController::class,'instruments'])->name('masters.instruments');
 Route::post('/masters/instruments', [MasterController::class,'storeInstrument'])->name('masters.instruments.store');
 Route::delete('/masters/instruments/{instrument}', [MasterController::class,'deleteInstrument'])->name('masters.instruments.delete');
+});
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserManagementController;
