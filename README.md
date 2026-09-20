@@ -31,3 +31,17 @@ Semua hasil final harus traceable ke input mentah dan versi metode.
 6. php artisan serve
 
 Repository ini dimulai dari initial commit yang hanya berisi README, sehingga struktur Laravel dibuat dari awal.
+## Current implementation status
+- Sample management API
+- Analysis persistence and traceability
+- DO and BOD5 calculation services
+- BOD dilution/control data tables
+- QC observation/control tables
+- Top-down uncertainty budget service
+- Replicate statistics (mean, SD, RSD)
+- Analysis report JSON endpoint
+- Laboratory dashboard API
+- Unit tests for calculation and uncertainty core
+
+## Next production hardening
+Authentication/roles, full CRUD master data, PDF/Excel reporting, audit trail, database seeders, acceptance criteria per controlled laboratory SOP, and review/approval workflow.
