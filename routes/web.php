@@ -30,3 +30,13 @@ Route::post('/logout',[AuthController::class,'logout'])->name('logout');
 Route::middleware('lab.auth')->group(function(){
  Route::middleware('role:admin')->prefix('admin')->group(function(){Route::get('/users',[UserManagementController::class,'index'])->name('admin.users');Route::post('/users',[UserManagementController::class,'store'])->name('admin.users.store');Route::put('/users/{user}',[UserManagementController::class,'update'])->name('admin.users.update');Route::delete('/users/{user}',[UserManagementController::class,'destroy'])->name('admin.users.delete');});
 });
+
+use App\Http\Controllers\AnalysisRecordController;
+use App\Http\Controllers\ReviewController;
+Route::middleware('lab.auth')->group(function(){
+ Route::get('/analysis/{analysis}',[AnalysisRecordController::class,'show'])->name('analysis.show');
+ Route::get('/analysis/{analysis}/edit',[AnalysisRecordController::class,'edit'])->middleware('role:analyst,admin')->name('analysis.edit');
+ Route::put('/analysis/{analysis}',[AnalysisRecordController::class,'update'])->middleware('role:analyst,admin')->name('analysis.update');
+ Route::delete('/analysis/{analysis}',[AnalysisRecordController::class,'destroy'])->middleware('role:analyst,admin')->name('analysis.delete');
+ Route::post('/analysis/{analysis}/review',[ReviewController::class,'store'])->middleware('role:supervisor,admin')->name('analysis.review');
+});
