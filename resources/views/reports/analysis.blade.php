@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Laporan Analisis {{ $report['report_number'] ?? $report['sample_code'] }}</title>
+<style>
+body{font-family:Arial,sans-serif;color:#111;margin:0;background:#eee}.sheet{max-width:900px;margin:24px auto;background:#fff;padding:38px;box-sizing:border-box}header{display:flex;justify-content:space-between;border-bottom:3px solid #111;padding-bottom:14px}h1{font-size:22px;margin:0}h2{font-size:16px;border-bottom:1px solid #999;padding-bottom:6px;margin-top:24px}table{width:100%;border-collapse:collapse}td,th{border:1px solid #aaa;padding:7px;text-align:left;font-size:13px}.meta td:first-child{width:28%;font-weight:bold}.approved{font-weight:bold}.actions{margin:15px auto;max-width:900px}.actions a,.actions button{padding:8px 12px;background:#173f7a;color:white;border:0;text-decoration:none;border-radius:5px}.small{font-size:11px;color:#555}.signature{display:flex;gap:60px;margin-top:55px}.signature>div{width:45%;text-align:center;min-height:90px;border-top:1px solid #333;padding-top:8px}@media print{body{background:#fff}.sheet{margin:0;max-width:none;padding:20px}.actions{display:none}}
+</style></head><body>
+<div class="actions"><a href="{{ route('analysis.show',$report['id'] ?? request()->route('id')) }}">← Detail</a> <button onclick="window.print()">Cetak / Save PDF</button></div>
+<div class="sheet">
+<header><div><h1>LABORATORY ANALYSIS REPORT</h1><div>Analisa {{ $report['parameter'] }}</div></div><div><b>No. Laporan</b><br>{{ $report['report_number'] ?? '-' }}</div></header>
+<h2>Identitas Analisis</h2><table class="meta"><tr><td>Kode Sample</td><td>{{ $report['sample_code'] }}</td></tr><tr><td>Parameter</td><td>{{ $report['parameter'] }}</td></tr><tr><td>Metode</td><td>{{ $report['method'] }}</td></tr><tr><td>Analis</td><td>{{ $report['analyst'] }}</td></tr><tr><td>Tanggal Analisis</td><td>{{ $report['analysed_at'] ?? '-' }}</td></tr><tr><td>Status</td><td class="approved">{{ $report['status'] }}</td></tr></table>
+<h2>Metadata</h2><table>@foreach($report['metadata'] as $k=>$v)<tr><td>{{ ucwords(str_replace('_',' ',$k)) }}</td><td>{{ $v ?? '-' }}</td></tr>@endforeach</table>
+<h2>Hasil</h2><table><tr><th>Parameter</th><th>Hasil</th><th>Satuan</th></tr><tr><td>{{ $report['parameter'] }}</td><td><b>{{ data_get($report['calculation'],'result','-') }}</b></td><td>mg/L</td></tr></table>
+@if($report['parameter']==='BOD5')
+<h2>QC BOD</h2><table><tr><th>Dilution</th><th>DO-0</th><th>DO-5</th><th>Depletion</th><th>Suhu</th><th>Jam</th><th>Status</th></tr>@foreach($report['bod_dilutions'] as $d)<tr><td>{{ $d['dilution_code'] }}</td><td>{{ $d['do_initial'] }}</td><td>{{ $d['do_final'] }}</td><td>{{ $d['do_depletion'] }}</td><td>{{ $d['incubation_temperature'] }}</td><td>{{ $d['incubation_hours'] }}</td><td>{{ $d['selection_status'] }}</td></tr>@endforeach</table>
+<table style="margin-top:10px"><tr><th>Control</th><th>Result</th><th>Acceptance</th><th>Status</th></tr>@foreach($report['bod_controls'] as $q)<tr><td>{{ $q['control_type'] }}</td><td>{{ $q['bod_result'] }}</td><td>{{ $q['expected_min'] }} – {{ $q['expected_max'] }}</td><td>{{ $q['status'] }}</td></tr>@endforeach</table>
+@endif
+@if($report['uncertainty'])<h2>Ketidakpastian Pengukuran</h2><table>@foreach($report['uncertainty'] as $k=>$v)<tr><td>{{ ucwords(str_replace('_',' ',$k)) }}</td><td>{{ is_scalar($v) ? $v : json_encode($v) }}</td></tr>@endforeach</table>@endif
+<h2>Approval</h2><table><tr><td>Approved by</td><td>{{ $report['approved_by'] ?? '-' }}</td></tr><tr><td>Approved at</td><td>{{ $report['approved_at'] ?? '-' }}</td></tr></table>
+<div class="signature"><div>Analis<br><br>{{ $report['analyst'] }}</div><div>Supervisor / Approver<br><br>{{ $report['approved_by'] ?? '-' }}</div></div>
+<p class="small">Dokumen dihasilkan dari sistem Laboratory Analysis. Periksa status APPROVED sebelum menerbitkan sebagai hasil resmi.</p>
+</div></body></html>
