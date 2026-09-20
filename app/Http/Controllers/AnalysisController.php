@@ -43,7 +43,7 @@ class AnalysisController extends Controller
  }
 
  private function saveRun(string $sample,string $parameter,string $method,array $inputs,array $calculation): AnalysisRun{
-  return AnalysisRun::create(['sample_code'=>$sample,'parameter'=>$parameter,'method_version'=>$method,'analyst'=>session('lab_user.name'),'analysed_at'=>now(),'inputs'=>$inputs,'calculation'=>$calculation,'status'=>'DRAFT']);
+  return AnalysisRun::create(['client_id'=>$inputs['client_id']??null,'sample_code'=>$sample,'parameter'=>$parameter,'method_version'=>$method,'analyst'=>session('lab_user.name'),'analysed_at'=>now(),'inputs'=>$inputs,'calculation'=>$calculation,'status'=>'DRAFT']);
  }
  private function assertClient(?string $id): void { if($id) abort_unless(Client::whereKey($id)->where('active',true)->exists(),422); }
 }
