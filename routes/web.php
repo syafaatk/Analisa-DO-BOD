@@ -32,6 +32,7 @@ Route::middleware('lab.auth')->group(function(){
 });
 
 use App\Http\Controllers\AnalysisRecordController;
+use App\Http\Controllers\ReviewController;
 Route::middleware('lab.auth')->group(function(){
  Route::get('/analysis/{analysis}',[AnalysisRecordController::class,'show'])->name('analysis.show');
  Route::post('/analysis/{analysis}/submit',[AnalysisRecordController::class,'submit'])->middleware('role:analyst,admin')->name('analysis.submit');
