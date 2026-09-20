@@ -11,3 +11,6 @@ Route::apiResource('/samples',SampleController::class)->only(['index','store','s
 
 use App\Http\Controllers\DashboardController;
 Route::get('/dashboard', [DashboardController::class,'index']);
+
+use App\Http\Controllers\ReviewController;
+Route::post('/analysis/{analysis}/review',[ReviewController::class,'store']);
