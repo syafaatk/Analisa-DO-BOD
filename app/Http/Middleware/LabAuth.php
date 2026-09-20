@@ -9,7 +9,7 @@ class LabAuth {
   if(($user['role']??null)==='super_admin') { $request->session()->forget('lab_id'); return $next($request); }
   if(empty($user['laboratory_id'])) return redirect()->route('login')->with('error','Akun belum terhubung ke laboratorium.');
   if(!$request->session()->has('lab_id')) $request->session()->put('lab_id',$user['laboratory_id']);
-  if((int)$request->session()->get('lab_id') !== (int)$user['laboratory_id']) { $request->session()->forget(['lab_id','lab_user']); return redirect()->route('login')->with('error','Sesi laboratorium tidak valid.'); }
+  if((string)$request->session()->get('lab_id') !== (string)$user['laboratory_id']) { $request->session()->forget(['lab_id','lab_user']); return redirect()->route('login')->with('error','Sesi laboratorium tidak valid.'); }
   return $next($request);
  }
 }
