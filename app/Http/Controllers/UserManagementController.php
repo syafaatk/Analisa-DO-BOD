@@ -5,7 +5,7 @@ use Illuminate\Http\Request;
 class UserManagementController extends Controller {
  public function index(){return view('admin.users.index',['users'=>LabUser::latest()->paginate(20)]);}
  public function store(Request $r){
-  $data=$r->validate(['name'=>'required|string|max:255','email'=>'required|email|max:255|unique:lab_users,email','role'=>'required|in:admin,supervisor,analyst,viewer','password'=>'required|string|min:8','active'=>'nullable|boolean']);
+  $data=$r->validate(['name'=>'required|string|max:255','email'=>'required|email|max:255|unique:lab_users,email,NULL,id,laboratory_id,'.session('lab_id'),'role'=>'required|in:admin,supervisor,analyst,viewer','password'=>'required|string|min:8','active'=>'nullable|boolean']);
   $u=new LabUser(['name'=>$data['name'],'email'=>$data['email'],'role'=>$data['role'],'active'=>$r->boolean('active',true)]);$u->setPassword($data['password']);$u->save();
   return back()->with('success','User berhasil dibuat.');
  }
