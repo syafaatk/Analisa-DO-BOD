@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
  public function up(): void {
   Schema::create('laboratories',function(Blueprint $t){$t->uuid('id')->primary();$t->string('code')->unique();$t->string('name');$t->boolean('active')->default(true);$t->text('address')->nullable();$t->string('phone')->nullable();$t->string('email')->nullable();$t->timestamps();});
-  $labId=(string) Str::uuid(); DB::table('laboratories')->insertGetId(['code'=>'LAB-DEFAULT','name'=>'Default Laboratory','active'=>true,'created_at'=>now(),'updated_at'=>now()]);
+  $labId=(string) Str::uuid(); DB::table('laboratories')->insert(['id'=>$labId,'code'=>'LAB-DEFAULT','name'=>'Default Laboratory','active'=>true,'created_at'=>now(),'updated_at'=>now()]);
   $tables=['analysis_runs','method_versions','samples','instruments','reagents','qc_results','uncertainty_models','uncertainty_components','bod_dilutions','qc_observations','bod_controls','analysis_reviews','analysis_audits'];
   foreach($tables as $table){
    Schema::table($table,function(Blueprint $t){$t->foreignUuid('laboratory_id')->nullable()->after('id')->index();});
