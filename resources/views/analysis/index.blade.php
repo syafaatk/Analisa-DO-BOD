@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Analisa DO & BOD</title>
+<style>
+body{font-family:system-ui;margin:0;background:#f5f7fb;color:#172033}.wrap{max-width:1180px;margin:32px auto;padding:0 18px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:18px}.card{background:#fff;border-radius:14px;padding:22px;box-shadow:0 4px 18px #0000000d}label{display:block;font-size:13px;margin-top:10px}input{width:100%;box-sizing:border-box;padding:9px;border:1px solid #ccd3df;border-radius:8px}button{margin-top:15px;padding:10px 15px;border:0;border-radius:8px;background:#182b49;color:#fff;cursor:pointer}.result{margin-top:15px;padding:12px;border-radius:8px;background:#eef6ff}.err{background:#fff0f0;color:#a11;padding:12px;border-radius:8px}.muted{color:#667085;font-size:13px}
+</style></head><body><div class="wrap"><h1>Analisa DO & BOD5</h1><p class="muted">Laboratory calculator — SNI 06-6989.14-2004, SNI 6989.72:2009, dan top-down uncertainty.</p>
+@if($errors->any())<div class="err">@foreach($errors->all() as $e)<div>{{ $e }}</div>@endforeach</div>@endif
+<div class="grid">
+<section class="card"><h2>1. DO — Titrasi</h2><form method="post" action="{{route('analysis.do')}}">@csrf
+@foreach([['thiosulfate_ml','V Na2S2O3 (mL)'],['normality','Normalitas (N)'],['winkler_volume_ml','Volume botol Winkler (mL)'],['reagent_mnso4_ml','MnSO4 (mL)'],['reagent_alkali_ml','Alkali iodida azida (mL)'],['aliquot_ml','Aliquot titrasi (mL)']] as $f)<label>{{$f[1]}}<input name="{{$f[0]}}" type="number" step="any" value="{{old($f[0],$f[0]==='reagent_mnso4_ml'||$f[0]==='reagent_alkali_ml'?1:($f[0]==='aliquot_ml'?50:''))}}" required></label>@endforeach
+<button>Hitung DO</button></form>
+@if(session('do_result'))<div class="result"><b>DO = {{session('do_result.result')}} mg/L</b><br>Faktor F = {{session('do_result.factor')}}<br><small>{{session('do_result.formula')}}</small></div>@endif</section>
+<section class="card"><h2>2. BOD₅</h2><form method="post" action="{{route('analysis.bod')}}">@csrf
+@foreach([['a1','A1 — DO hari 0'],['a2','A2 — DO hari 5'],['b1','B1 — blanko hari 0'],['b2','B2 — blanko hari 5'],['vb','VB — volume bibit blanko (mL)'],['vc','Vc — volume bibit contoh (mL)'],['p','P — V1/V2']] as $f)<label>{{$f[1]}}<input name="{{$f[0]}}" type="number" step="any" value="{{old($f[0])}}" required></label>@endforeach
+<button>Hitung BOD₅</button></form>
+@if(session('bod_result'))<div class="result"><b>BOD₅ = {{session('bod_result.result')}} mg/L</b><br>Konsumsi sampel = {{session('bod_result.sample_depletion')}} mg/L<br>Koreksi bibit = {{session('bod_result.seed_correction')}} mg/L</div>@endif</section>
+<section class="card"><h2>3. Ketidakpastian Top-Down</h2><p class="muted">Masukkan SD precision dari data QC/validasi dan, bila tersedia, SD bias serta jumlah observasinya.</p><form method="post" action="{{route('analysis.uncertainty')}}">@csrf
+@foreach([['precision_sd','SD intermediate precision'],['precision_n','n precision'],['bias_sd','SD bias (opsional)'],['bias_n','n bias (opsional)'],['coverage_factor','Coverage factor k']] as $f)<label>{{$f[1]}}<input name="{{$f[0]}}" type="number" step="any" value="{{old($f[0],$f[0]==='coverage_factor'?2:'')}}" {{$f[0]==='bias_sd'||$f[0]==='bias_n'?'':'required'}}></label>@endforeach
+<button>Hitung ketidakpastian</button></form>
+@if(session('uncertainty_result'))<div class="result"><b>U expanded = {{session('uncertainty_result.expanded_uncertainty')}}</b><br>u precision = {{session('uncertainty_result.u_precision')}}<br>u bias = {{session('uncertainty_result.u_bias')}}<br>u combined = {{session('uncertainty_result.u_combined')}}<br>k = {{session('uncertainty_result.coverage_factor')}}</div>@endif</section>
+</div></div></body></html>
