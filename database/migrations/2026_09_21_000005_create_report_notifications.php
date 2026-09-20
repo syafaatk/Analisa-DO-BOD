@@ -1,0 +1,3 @@
+<?php
+use Illuminate\Database\Migrations\Migration;use Illuminate\Database\Schema\Blueprint;use Illuminate\Support\Facades\Schema;
+return new class extends Migration {public function up():void{Schema::create('report_notifications',function(Blueprint $t){$t->uuid('id')->primary();$t->uuid('laboratory_id');$t->uuid('analysis_run_id');$t->uuid('client_id');$t->string('recipient');$t->string('type',30)->default('REPORT_APPROVED');$t->string('status',20)->default('PENDING');$t->timestamp('sent_at')->nullable();$t->text('error')->nullable();$t->timestamps();$t->index(['analysis_run_id','status']);});}public function down():void{Schema::dropIfExists('report_notifications');}};
