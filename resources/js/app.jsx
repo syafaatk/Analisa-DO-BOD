@@ -43,4 +43,30 @@ function Laboratories(){const labs=window.LABORATORIES||[];return <main classNam
 
 function ReportPrint(){const r=window.REPORT_DATA||{};return <main className="container report-page" style={{padding:'20px 0'}}><div className="actions no-print"><button className="btn btn-primary" onClick={()=>window.print()}>Cetak / Simpan PDF</button><button className="btn btn-secondary" onClick={()=>history.back()}>Kembali</button></div><article className="card" style={{marginTop:16}}><header className="report-header"><div><h1>LABORATORY ANALYSIS REPORT</h1><div>Analisa {r.parameter}</div></div><div><b>No. Laporan</b><br/>{r.report_number||'-'}</div></header><h2>Identitas Analisis</h2><table className="table"><tbody>{[['Kode Sample',r.sample_code],['Parameter',r.parameter],['Metode',r.method],['Analis',r.analyst],['Tanggal Analisis',r.analysed_at],['Status',r.status],...Object.entries(r.metadata||{})].map(x=><tr key={x[0]}><th>{x[0]}</th><td>{x[1]||'-'}</td></tr>)}</tbody></table><h2>Hasil</h2><table className="table"><tbody><tr><th>Parameter</th><th>Hasil</th><th>Satuan</th></tr><tr><td>{r.parameter}</td><td><b>{r.calculation?.result??'-'}</b></td><td>mg/L</td></tr></tbody></table>{r.parameter==='BOD5'&&<><h2>QC BOD</h2><table className="table"><thead><tr><th>Kode</th><th>DO awal</th><th>DO akhir</th><th>Depletion</th><th>Suhu</th><th>Jam</th><th>Status</th></tr></thead><tbody>{(r.bod_dilutions||[]).map(d=><tr key={d.id}><td>{d.dilution_code}</td><td>{d.do_initial}</td><td>{d.do_final}</td><td>{d.do_depletion}</td><td>{d.incubation_temperature}</td><td>{d.incubation_hours}</td><td>{d.selection_status}</td></tr>)}</tbody></table><table className="table"><thead><tr><th>Control</th><th>Result</th><th>Range</th><th>Status</th></tr></thead><tbody>{(r.bod_controls||[]).map(q=><tr key={q.id}><td>{q.control_code}</td><td>{q.bod_result}</td><td>{q.expected_min} – {q.expected_max}</td><td>{q.status}</td></tr>)}</tbody></table></>}<h2>Perhitungan & Ketidakpastian</h2><pre style={{whiteSpace:'pre-wrap'}}>{JSON.stringify({calculation:r.calculation,uncertainty:r.uncertainty},null,2)}</pre><h2>Approval</h2><table className="table"><tbody><tr><th>Approved by</th><td>{r.approved_by||'-'}</td></tr><tr><th>Approved at</th><td>{r.approved_at||'-'}</td></tr></tbody></table><div className="report-signature"><div>Analis,<br/><br/><br/><b>{r.analyst||'-'}</b></div><div>Reviewer / Approver,<br/><br/><br/><b>{r.approved_by||'-'}</b></div></div></article></main>}
 
-const root=document.getElementById('react-root');if(root){const page=document.body.dataset.page;const view=page==='client-login'?<ClientLogin/>:page==='client-dashboard'?<ClientDashboard/>:page==='client-report'?<ClientReport/>:page==='report'?<ReportPrint/>:page==='login'?<Login/>:page==='users'?<Users/>:page==='clients'?<ClientManagement/>:page==='laboratories'?<Laboratories/>:page==='samples'?<Master type="samples"/>:page==='reagents'?<Master type="reagents"/>:page==='instruments'?<Master type="instruments"/>:page==='show'?<Show/>:page==='edit'?<Edit/>:<AnalysisApp/>;createRoot(root).render(view);}
+function AdminLayout({children,title='Dashboard'}) {
+ const role=window.LAB_USER_ROLE||'';
+ const path=window.location.pathname;
+ const nav=[
+  {label:'Dashboard',href:'/analysis',icon:'⌂',show:true},
+  {label:'Analisis',href:'/analysis',icon:'◈',show:true},
+  {label:'Samples',href:'/masters/samples',icon:'▣',show:['admin','supervisor','analyst','viewer','super_admin'].includes(role)},
+  {label:'Reagen',href:'/masters/reagents',icon:'◉',show:['admin','supervisor','analyst','viewer','super_admin'].includes(role)},
+  {label:'Instrumen',href:'/masters/instruments',icon:'▤',show:['admin','supervisor','analyst','viewer','super_admin'].includes(role)},
+  {label:'Client',href:'/admin/clients',icon:'◎',show:['admin','super_admin'].includes(role)},
+  {label:'Users',href:'/admin/users',icon:'♙',show:['admin','super_admin'].includes(role)},
+  {label:'Laboratorium',href:'/superadmin/laboratories',icon:'⌘',show:role==='super_admin'}
+ ];
+ return <div className="admin-layout">
+  <aside className="admin-sidebar">
+   <div className="brand"><div className="brand-mark">LAB</div><div><strong>LabFlow</strong><span>DO · BOD₅ · QC</span></div></div>
+   <div className="sidebar-section"><span className="sidebar-caption">WORKSPACE</span>{nav.filter(x=>x.show).map(n=><a key={n.href+n.label} className={path===n.href?'nav-item active':'nav-item'} href={n.href}><span className="nav-icon">{n.icon}</span>{n.label}</a>)}</div>
+   <div className="sidebar-bottom"><div className="tenant"><span className="status-dot"></span><div><b>{window.LABORATORY_NAME||'Laboratorium'}</b><small>{role||'user'}</small></div></div><form method="post" action="/logout"><input type="hidden" name="_token" value={csrf()}/><button className="logout-link">↪ Logout</button></form></div>
+  </aside>
+  <section className="admin-main">
+   <header className="admin-header"><div><span className="eyebrow">LABORATORY INFORMATION SYSTEM</span><h1>{title}</h1></div><div className="header-user"><div className="avatar">{(window.LAB_USER_NAME||'U').slice(0,1).toUpperCase()}</div><div><b>{window.LAB_USER_NAME||'User'}</b><span>{role}</span></div></div></header>
+   <div className="admin-content">{children}</div>
+  </section>
+ </div>;
+}
+
+const root=document.getElementById('react-root');if(root){const page=document.body.dataset.page;const rawView=page==='client-login'?<ClientLogin/>:page==='client-dashboard'?<ClientDashboard/>:page==='client-report'?<ClientReport/>:page==='report'?<ReportPrint/>:page==='login'?<Login/>:page==='users'?<Users/>:page==='clients'?<ClientManagement/>:page==='laboratories'?<Laboratories/>:page==='samples'?<Master type="samples"/>:page==='reagents'?<Master type="reagents"/>:page==='instruments'?<Master type="instruments"/>:page==='show'?<Show/>:page==='edit'?<Edit/>:<AnalysisApp/>;const internal=['users','clients','laboratories','samples','reagents','instruments','show','edit'].includes(page);const view=internal?<AdminLayout title={page==='show'?'Detail Analisis':page==='edit'?'Edit Analisis':page==='clients'?'Client Management':page==='users'?'User Management':page==='laboratories'?'Laboratory Management':page==='samples'?'Master Sample':page==='reagents'?'Master Reagen':'Master Instrumen'}>{rawView}</AdminLayout>:rawView;createRoot(root).render(view);}
