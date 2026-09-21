@@ -23,6 +23,10 @@ class AnalysisController extends Controller
   ]);
  }
 
+ public function doPage(){ return view('analysis.index',['recent'=>AnalysisRun::latest()->limit(10)->get(),'clients'=>Client::where('active',true)->orderBy('name')->get(['id','code','name']),'doRuns'=>AnalysisRun::where('parameter','DO')->latest()->paginate(10,['*'],'do_page'),'bodRuns'=>AnalysisRun::where('parameter','BOD5')->latest()->paginate(10,['*'],'bod_page'),'module'=>'do']); }
+ public function bodPage(){ return view('analysis.index',['recent'=>AnalysisRun::latest()->limit(10)->get(),'clients'=>Client::where('active',true)->orderBy('name')->get(['id','code','name']),'doRuns'=>AnalysisRun::where('parameter','DO')->latest()->paginate(10,['*'],'do_page'),'bodRuns'=>AnalysisRun::where('parameter','BOD5')->latest()->paginate(10,['*'],'bod_page'),'module'=>'bod']); }
+ public function uncertaintyPage(){ return view('analysis.index',['recent'=>AnalysisRun::latest()->limit(10)->get(),'clients'=>Client::where('active',true)->orderBy('name')->get(['id','code','name']),'doRuns'=>AnalysisRun::where('parameter','DO')->latest()->paginate(10,['*'],'do_page'),'bodRuns'=>AnalysisRun::where('parameter','BOD5')->latest()->paginate(10,['*'],'bod_page'),'module'=>'uncertainty']); }
+
  public function calculateDo(Request $request){
   $data=$request->validate(['client_id'=>'nullable|uuid','sample_code'=>'required|string|max:100','thiosulfate_ml'=>'required|numeric|min:0.000001','thiosulfate_duplo_ml'=>'nullable|numeric|min:0.000001','normality'=>'required|numeric|min:0.000001','winkler_volume_ml'=>'required|numeric|min:2.000001','reagent_mnso4_ml'=>'required|numeric|min:0','reagent_alkali_ml'=>'required|numeric|min:0','aliquot_ml'=>'required|numeric|min:0.000001']);
   $this->assertClient($data['client_id']??null); $calc=$this->calc->dissolvedOxygen($data['thiosulfate_ml'],$data['normality'],$data['winkler_volume_ml'],$data['reagent_mnso4_ml'],$data['reagent_alkali_ml'],$data['aliquot_ml']);
