@@ -11,7 +11,17 @@ use Illuminate\Http\Request;
 class AnalysisController extends Controller
 {
  public function __construct(private LaboratoryCalculationService $calc, private BodEvaluationService $bodQc){}
- public function index(){return view('analysis.index',['recent'=>AnalysisRun::latest()->limit(10)->get(),'doRuns'=>AnalysisRun::where('parameter','DO')->latest()->paginate(10,['*'],'do_page'),'bodRuns'=>AnalysisRun::where('parameter','BOD5')->latest()->paginate(10,['*'],'bod_page')]);}
+ public function index()
+ {
+  $clients = Client::where('active', true)->orderBy('name')->get(['id', 'code', 'name']);
+
+  return view('analysis.index', [
+   'recent' => AnalysisRun::latest()->limit(10)->get(),
+   'clients' => $clients,
+   'doRuns' => AnalysisRun::where('parameter', 'DO')->latest()->paginate(10, ['*'], 'do_page'),
+   'bodRuns' => AnalysisRun::where('parameter', 'BOD5')->latest()->paginate(10, ['*'], 'bod_page'),
+  ]);
+ }
 
  public function calculateDo(Request $request){
   $data=$request->validate(['client_id'=>'nullable|uuid','sample_code'=>'required|string|max:100','thiosulfate_ml'=>'required|numeric|min:0.000001','thiosulfate_duplo_ml'=>'nullable|numeric|min:0.000001','normality'=>'required|numeric|min:0.000001','winkler_volume_ml'=>'required|numeric|min:2.000001','reagent_mnso4_ml'=>'required|numeric|min:0','reagent_alkali_ml'=>'required|numeric|min:0','aliquot_ml'=>'required|numeric|min:0.000001']);
@@ -22,7 +32,7 @@ class AnalysisController extends Controller
 
  public function calculateBod(Request $request){
   $data=$request->validate([
-   'sample_code'=>'required|string|max:100','a1'=>'required|numeric','a2'=>'required|numeric','b1'=>'required|numeric','b2'=>'required|numeric','vb'=>'required|numeric|min:0','vc'=>'required|numeric|min:0','p'=>'required|numeric|min:0.000001',
+   'client_id'=>'nullable|uuid','sample_code'=>'required|string|max:100','a1'=>'required|numeric','a2'=>'required|numeric','b1'=>'required|numeric','b2'=>'required|numeric','vb'=>'required|numeric|min:0','vc'=>'required|numeric|min:0','p'=>'required|numeric|min:0.000001',
    'sample_ph'=>'nullable|numeric|min:0|max:14','sample_temperature'=>'nullable|numeric','sampling_at'=>'nullable|date','bod_incubation_start'=>'nullable|date','bod_incubation_end'=>'nullable|date','storage_temperature'=>'nullable|numeric','storage_hours'=>'nullable|numeric|min:0','interference_treatment'=>'nullable|string|max:255',
    'gga_bod'=>'nullable|numeric',
    'dilutions'=>'nullable|array','dilutions.*.sample_volume_ml'=>'nullable|numeric|min:0','dilutions.*.final_volume_ml'=>'nullable|numeric|min:0.0001','dilutions.*.do_initial'=>'nullable|numeric','dilutions.*.do_final'=>'nullable|numeric','dilutions.*.incubation_temperature'=>'nullable|numeric','dilutions.*.incubation_hours'=>'nullable|numeric','dilutions.*.dilution_at'=>'nullable|date','dilutions.*.do_initial_at'=>'nullable|date','dilutions.*.do_final_at'=>'nullable|date'
