@@ -21,14 +21,13 @@ class AnalysisController extends Controller
   return view('analysis.index', [
    'recent' => AnalysisRun::latest()->limit(10)->get(),
    'clients' => $clients,
-   'doRuns' => AnalysisRun::where('parameter', 'DO')->latest()->paginate(10, ['*'], 'do_page'),
-   'bodRuns' => AnalysisRun::where('parameter', 'BOD5')->latest()->paginate(10, ['*'], 'bod_page'),
+   'dashboard' => $this->dashboardCounts(),
   ]);
  }
 
- public function doPage(){ return view('analysis.index',['recent'=>AnalysisRun::latest()->limit(10)->get(),'clients'=>Client::where('active',true)->orderBy('name')->get(['id','code','name']),'doRuns'=>AnalysisRun::where('parameter','DO')->latest()->paginate(10,['*'],'do_page'),'bodRuns'=>AnalysisRun::where('parameter','BOD5')->latest()->paginate(10,['*'],'bod_page'),'module'=>'do']); }
- public function bodPage(){ return view('analysis.index',['recent'=>AnalysisRun::latest()->limit(10)->get(),'clients'=>Client::where('active',true)->orderBy('name')->get(['id','code','name']),'doRuns'=>AnalysisRun::where('parameter','DO')->latest()->paginate(10,['*'],'do_page'),'bodRuns'=>AnalysisRun::where('parameter','BOD5')->latest()->paginate(10,['*'],'bod_page'),'module'=>'bod']); }
- public function uncertaintyPage(){ return view('analysis.index',['recent'=>AnalysisRun::latest()->limit(10)->get(),'clients'=>Client::where('active',true)->orderBy('name')->get(['id','code','name']),'doRuns'=>AnalysisRun::where('parameter','DO')->latest()->paginate(10,['*'],'do_page'),'bodRuns'=>AnalysisRun::where('parameter','BOD5')->latest()->paginate(10,['*'],'bod_page'),'module'=>'uncertainty']); }
+ public function doPage(){ return view('analysis.index',['recent'=>AnalysisRun::latest()->limit(10)->get(),'clients'=>Client::where('active',true)->orderBy('name')->get(['id','code','name']),'dashboard'=>$this->dashboardCounts(),'module'=>'do']); }
+ public function bodPage(){ return view('analysis.index',['recent'=>AnalysisRun::latest()->limit(10)->get(),'clients'=>Client::where('active',true)->orderBy('name')->get(['id','code','name']),'dashboard'=>$this->dashboardCounts(),'module'=>'bod']); }
+ public function uncertaintyPage(){ return view('analysis.index',['recent'=>AnalysisRun::latest()->limit(10)->get(),'clients'=>Client::where('active',true)->orderBy('name')->get(['id','code','name']),'dashboard'=>$this->dashboardCounts(),'module'=>'uncertainty']); }
 
  public function calculateDo(Request $request){
   $data=$request->validate(['client_id'=>'nullable|uuid','sample_code'=>'required|string|max:100','thiosulfate_ml'=>'required|numeric|min:0.000001','thiosulfate_duplo_ml'=>'nullable|numeric|min:0.000001','normality'=>'required|numeric|min:0.000001','winkler_volume_ml'=>'required|numeric|min:2.000001','reagent_mnso4_ml'=>'required|numeric|min:0','reagent_alkali_ml'=>'required|numeric|min:0','aliquot_ml'=>'required|numeric|min:0.000001']);
@@ -68,6 +67,9 @@ class AnalysisController extends Controller
 
  private function saveRun(string $sample,string $parameter,string $method,array $inputs,array $calculation): AnalysisRun{
   return AnalysisRun::create(['client_id'=>$inputs['client_id']??null,'sample_code'=>$sample,'parameter'=>$parameter,'method_version'=>$method,'analyst'=>session('lab_user.name'),'analysed_at'=>now(),'inputs'=>$inputs,'calculation'=>$calculation,'status'=>'DRAFT']);
+ }
+ private function dashboardCounts(): array {
+  return ['total'=>AnalysisRun::count(),'do'=>AnalysisRun::where('parameter','DO')->count(),'bod'=>AnalysisRun::where('parameter','BOD5')->count(),'clients'=>Client::count()];
  }
  private function assertClient(?string $id): void { if($id) abort_unless(Client::whereKey($id)->where('active',true)->exists(),422); }
 }
