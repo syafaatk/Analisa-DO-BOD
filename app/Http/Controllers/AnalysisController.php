@@ -25,7 +25,7 @@ class AnalysisController extends Controller
 
  public function calculateDo(Request $request){
   $data=$request->validate(['client_id'=>'nullable|uuid','sample_code'=>'required|string|max:100','thiosulfate_ml'=>'required|numeric|min:0.000001','thiosulfate_duplo_ml'=>'nullable|numeric|min:0.000001','normality'=>'required|numeric|min:0.000001','winkler_volume_ml'=>'required|numeric|min:2.000001','reagent_mnso4_ml'=>'required|numeric|min:0','reagent_alkali_ml'=>'required|numeric|min:0','aliquot_ml'=>'required|numeric|min:0.000001']);
-  $calc=$this->assertClient($data['client_id']??null); $this->calc->dissolvedOxygen($data['thiosulfate_ml'],$data['normality'],$data['winkler_volume_ml'],$data['reagent_mnso4_ml'],$data['reagent_alkali_ml'],$data['aliquot_ml']);
+  $this->assertClient($data['client_id']??null); $calc=$this->calc->dissolvedOxygen($data['thiosulfate_ml'],$data['normality'],$data['winkler_volume_ml'],$data['reagent_mnso4_ml'],$data['reagent_alkali_ml'],$data['aliquot_ml']);
   $duplo=null; if(!empty($data['thiosulfate_duplo_ml'])) { $duplo=$this->calc->dissolvedOxygen($data['thiosulfate_duplo_ml'],$data['normality'],$data['winkler_volume_ml'],$data['reagent_mnso4_ml'],$data['reagent_alkali_ml'],$data['aliquot_ml']); $calc['duplo']=$duplo; $calc['rpd']=$this->calc->rpd($calc['result'],$duplo['result']); $calc['qc_status']=$calc['rpd']<=10?'PASS':'REVIEW'; } $this->saveRun($data['sample_code'],'DO','SNI 06-6989.14-2004',$data,$calc);
   return $request->expectsJson() ? response()->json(['message'=>'Analisis DO berhasil disimpan.','data'=>$calc],201) : back()->with('do_result',$calc)->withInput();
  }
@@ -37,7 +37,7 @@ class AnalysisController extends Controller
    'gga_bod'=>'nullable|numeric',
    'dilutions'=>'nullable|array','dilutions.*.sample_volume_ml'=>'nullable|numeric|min:0','dilutions.*.final_volume_ml'=>'nullable|numeric|min:0.0001','dilutions.*.do_initial'=>'nullable|numeric','dilutions.*.do_final'=>'nullable|numeric','dilutions.*.incubation_temperature'=>'nullable|numeric','dilutions.*.incubation_hours'=>'nullable|numeric','dilutions.*.dilution_at'=>'nullable|date','dilutions.*.do_initial_at'=>'nullable|date','dilutions.*.do_final_at'=>'nullable|date'
   ]);
-  $calc=$this->assertClient($data['client_id']??null); $this->calc->bod5($data['a1'],$data['a2'],$data['b1'],$data['b2'],$data['vb'],$data['vc'],$data['p']);
+  $this->assertClient($data['client_id']??null); $calc=$this->calc->bod5($data['a1'],$data['a2'],$data['b1'],$data['b2'],$data['vb'],$data['vc'],$data['p']);
   $calc['qc']=$this->bodQc->evaluate($data['a1'],$data['a2'],$data['b1'],$data['b2'],$data['p']);
   if(isset($data['gga_bod'])) $calc['gga']=$this->bodQc->evaluateGga($data['gga_bod']);
   if(isset($data['storage_hours'])) $calc['storage_status']=$this->bodQc->storageStatus($data['storage_hours']);
