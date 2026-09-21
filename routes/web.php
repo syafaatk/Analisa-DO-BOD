@@ -51,12 +51,15 @@ Route::middleware('lab.auth')->group(function () {
         Route::get('/masters/samples', [MasterController::class, 'samples'])->name('masters.samples');
         Route::post('/masters/samples', [MasterController::class, 'storeSample'])->name('masters.samples.store');
         Route::delete('/masters/samples/{sample}', [MasterController::class, 'deleteSample'])->name('masters.samples.delete');
+        Route::put('/masters/samples/{sample}', [MasterController::class, 'updateSample'])->name('masters.samples.update');
         Route::get('/masters/reagents', [MasterController::class, 'reagents'])->name('masters.reagents');
         Route::post('/masters/reagents', [MasterController::class, 'storeReagent'])->name('masters.reagents.store');
         Route::delete('/masters/reagents/{reagent}', [MasterController::class, 'deleteReagent'])->name('masters.reagents.delete');
+        Route::put('/masters/reagents/{reagent}', [MasterController::class, 'updateReagent'])->name('masters.reagents.update');
         Route::get('/masters/instruments', [MasterController::class, 'instruments'])->name('masters.instruments');
         Route::post('/masters/instruments', [MasterController::class, 'storeInstrument'])->name('masters.instruments.store');
         Route::delete('/masters/instruments/{instrument}', [MasterController::class, 'deleteInstrument'])->name('masters.instruments.delete');
+        Route::put('/masters/instruments/{instrument}', [MasterController::class, 'updateInstrument'])->name('masters.instruments.update');
 
         Route::middleware('role:admin,super_admin')->prefix('admin')->group(function () {
             Route::get('/users', [UserManagementController::class, 'index'])->name('admin.users');
@@ -65,6 +68,8 @@ Route::middleware('lab.auth')->group(function () {
             Route::delete('/users/{user}', [UserManagementController::class, 'destroy'])->name('admin.users.delete');
             Route::get('/clients', [ClientManagementController::class, 'index'])->name('admin.clients');
             Route::post('/clients', [ClientManagementController::class, 'store'])->name('admin.clients.store');
+            Route::put('/clients/{client}', [ClientManagementController::class, 'update'])->name('admin.clients.update');
+            Route::delete('/clients/{client}', [ClientManagementController::class, 'destroy'])->name('admin.clients.delete');
         });
     });
 
