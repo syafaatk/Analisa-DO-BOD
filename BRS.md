@@ -454,3 +454,19 @@ Frontend internal laboratory menggunakan React + Vite dengan pola **Admin Dashbo
 - Menambahkan sidebar role-aware, header user/laboratorium, active navigation, dan responsive layout.
 - Memperbarui visual form, table, card, button, dan state feedback.
 - Menempatkan dashboard analisis dan halaman administrasi dalam pola workspace yang konsisten.
+
+
+# 35. Pemisahan Halaman Modul Analisis
+UI analisis dipisahkan menjadi halaman/workspace tersendiri:
+- `/analysis` — Dashboard analisis dan ringkasan.
+- `/analysis/do` — halaman khusus Analisis DO.
+- `/analysis/bod` — halaman khusus Analisis BOD5.
+- `/analysis/uncertainty` — halaman khusus Top-Down Measurement Uncertainty.
+
+Pemisahan halaman bertujuan mengurangi kepadatan form pada dashboard dan membuat workflow tiap modul lebih fokus. Endpoint POST perhitungan tetap menggunakan endpoint bisnis yang sama sehingga formula dan penyimpanan hasil tidak berubah.
+
+### Changelog
+### v1.2 — 2026-09-21
+- Menambahkan route GET terpisah untuk DO, BOD5, dan uncertainty.
+- Dashboard `/analysis` dipisahkan dari workspace input analisis.
+- Menambahkan navigasi langsung antar modul analisis.
