@@ -4,18 +4,47 @@ use App\Models\AnalysisRun;
 use App\Models\AnalysisAudit;
 use App\Models\BodDilution;
 use App\Models\BodControl;
+use App\Models\Client;
 use Illuminate\Http\Request;
+use InvalidArgumentException;
 use App\Services\LaboratoryCalculationService;
 use App\Services\BodEvaluationService;
 use App\Services\AnalysisAuditService;
 use App\Services\AnalysisWorkflowService;
 class AnalysisRecordController extends Controller {
- public function show(AnalysisRun $analysis){$analysis->load(['bodDilutions','bodControls']);$audits=AnalysisAudit::where('analysis_run_id',$analysis->id)->latest()->get();return view('analysis.show',['analysis'=>$analysis,'audits'=>$audits]);}
- public function submit(AnalysisRun $analysis,AnalysisWorkflowService $workflow){$workflow->transition($analysis,'READY_FOR_REVIEW');return redirect()->route('analysis.show',$analysis)->with('success','Analisis dikirim untuk review.');}
- public function edit(AnalysisRun $analysis){if($analysis->status==='APPROVED')abort(403,'Analisis yang sudah approved tidak dapat diedit.');$analysis->load(['bodDilutions','bodControls']);return view('analysis.edit',['analysis'=>$analysis]);}
+
+ private const EDITABLE_STATUSES=['DRAFT','REVISION_REQUIRED','REJECTED'];
+
+ public function show(AnalysisRun $analysis){
+  $analysis->load(['bodDilutions','bodControls']);
+  $audits=AnalysisAudit::where('analysis_run_id',$analysis->id)->latest()->get();
+  return view('analysis.show',['analysis'=>$analysis,'audits'=>$audits]);
+ }
+
+ public function submit(AnalysisRun $analysis,AnalysisWorkflowService $workflow){
+  try {
+   $workflow->transition($analysis,'READY_FOR_REVIEW');
+  } catch(InvalidArgumentException $e) {
+   return back()->with('error',$e->getMessage());
+  }
+  return redirect()->route('analysis.show',$analysis)->with('success','Analisis dikirim untuk review.');
+ }
+
+ public function edit(AnalysisRun $analysis){
+  $this->assertEditable($analysis);
+  $analysis->load(['bodDilutions','bodControls']);
+  return view('analysis.edit',['analysis'=>$analysis]);
+ }
+
  public function update(Request $request,AnalysisRun $analysis,LaboratoryCalculationService $calc,BodEvaluationService $bodQc,AnalysisAuditService $audit){
-  if($analysis->status==='APPROVED')abort(403);
+  $this->assertEditable($analysis);
   $base=$request->validate(['sample_code'=>'required|string|max:100','notes'=>'nullable|string']);
+  $clientId=$analysis->client_id;
+  if($request->filled('client_id')){
+   $validated=$request->validate(['client_id'=>'nullable|uuid']);
+   $this->assertClientActive($validated['client_id']);
+   $clientId=$validated['client_id'];
+  }
   $old=$analysis->inputs??[];$fromStatus=$analysis->status?:'DRAFT';
   if($analysis->parameter==='DO'){
    $data=$base+$request->validate(['thiosulfate_ml'=>'required|numeric|min:0.000001','thiosulfate_duplo_ml'=>'nullable|numeric|min:0.000001','normality'=>'required|numeric|min:0.000001','winkler_volume_ml'=>'required|numeric|min:2.000001','reagent_mnso4_ml'=>'required|numeric|min:0','reagent_alkali_ml'=>'required|numeric|min:0','aliquot_ml'=>'required|numeric|min:0.000001']);
@@ -34,7 +63,8 @@ class AnalysisRecordController extends Controller {
    $dilutions=$data['dilutions']??[];unset($data['dilutions']);
   }
   $inputs=$data;unset($inputs['notes']);
-  $analysis->update(['sample_code'=>$data['sample_code'],'notes'=>$data['notes']??null,'inputs'=>$inputs,'calculation'=>$newCalc,'status'=>'DRAFT','submitted_at'=>null,'approved_by'=>null,'approved_at'=>null]);
+  $inputs['client_id']=$clientId;
+  $analysis->update(['sample_code'=>$data['sample_code'],'notes'=>$data['notes']??null,'client_id'=>$clientId,'inputs'=>$inputs,'calculation'=>$newCalc,'status'=>'DRAFT','submitted_at'=>null,'approved_by'=>null,'approved_at'=>null]);
   if($analysis->parameter==='BOD5'){
    $analysis->bodDilutions()->delete();$analysis->bodControls()->delete();
    foreach(($dilutions??[]) as $idx=>$d){if(!isset($d['do_initial'],$d['do_final'],$d['sample_volume_ml'],$d['final_volume_ml']))continue;$p=$d['final_volume_ml']>0?$d['sample_volume_ml']/$d['final_volume_ml']:0;$eval=$bodQc->evaluateDilution($d['do_initial'],$d['do_final'],$d['incubation_temperature']??20,$d['incubation_hours']??120);BodDilution::create(array_merge($d,['analysis_run_id'=>$analysis->id,'p'=>$p,'do_depletion'=>$d['do_initial']-$d['do_final'],'dilution_code'=>'D'.($idx+1),'selection_status'=>$eval['status']]));}
@@ -43,5 +73,20 @@ class AnalysisRecordController extends Controller {
   $audit->log($analysis,'EDIT',$fromStatus,'DRAFT',['before'=>$old,'after'=>$inputs]);
   return redirect()->route('analysis.show',$analysis)->with('success','Data analisis diperbarui, QC dihitung ulang, dan status dikembalikan ke DRAFT.');
  }
- public function destroy(AnalysisRun $analysis,AnalysisAuditService $audit){if($analysis->status==='APPROVED')abort(403);$audit->log($analysis,'DELETE',$analysis->status,null);$analysis->delete();return redirect()->route('analysis.index')->with('success','Data analisis dihapus.');}
+
+ public function destroy(AnalysisRun $analysis,AnalysisAuditService $audit){
+  $this->assertEditable($analysis);
+  $audit->log($analysis,'DELETE',$analysis->status,null,['sample_code'=>$analysis->sample_code,'parameter'=>$analysis->parameter]);
+  $analysis->delete();
+  return redirect()->route('analysis.index')->with('success','Data analisis dihapus.');
+ }
+
+ private function assertEditable(AnalysisRun $analysis): void {
+  if(!in_array($analysis->status,self::EDITABLE_STATUSES,true)){
+   abort(409,trans('Analisis dengan status :status tidak dapat diedit.',['status'=>$analysis->status]));
+  }
+ }
+ private function assertClientActive(?string $clientId): void {
+  if($clientId) abort_unless(Client::whereKey($clientId)->where('active',true)->exists(),422,trans('Client tidak aktif.'));
+ }
 }

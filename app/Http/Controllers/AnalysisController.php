@@ -6,6 +6,9 @@ use App\Services\LaboratoryCalculationService;
 use App\Services\BodEvaluationService;
 use App\Models\BodDilution;
 use App\Models\BodControl;
+use App\Models\UncertaintyModel;
+use App\Models\UncertaintyComponent;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 
 class AnalysisController extends Controller
@@ -47,13 +50,20 @@ class AnalysisController extends Controller
   if(isset($data['storage_hours'])) $calc['storage_status']=$this->bodQc->storageStatus($data['storage_hours']);
   $run=$this->saveRun($data['sample_code'],'BOD5','SNI 6989.72:2009',$data,$calc);
   foreach(($data['dilutions']??[]) as $idx=>$d){if(!isset($d['do_initial'],$d['do_final']))continue;$p=$d['final_volume_ml']>0?($d['sample_volume_ml']/$d['final_volume_ml']):0;$eval=$this->bodQc->evaluateDilution($d['do_initial'],$d['do_final'],$d['incubation_temperature']??20,$d['incubation_hours']??120);BodDilution::create(array_merge($d,['analysis_run_id'=>$run->id,'p'=>$p,'do_depletion'=>$d['do_initial']-$d['do_final'],'dilution_code'=>'D'.($idx+1),'selection_status'=>$eval['status']]));}
-  if(isset($data['gga_bod'])){ $g=$this->bodQc->evaluateGga($data['gga_bod']); BodControl::create(['analysis_run_id'=>$run->id,'control_type'=>'GGA','control_code'=>'GGA','bod_result'=>$data['gga_bod'],'expected_min'=>$g['lower'],'expected_max'=>$g['upper'],'status'=>$g['status']]); }
+  if(isset($data['gga_bod'])){ $g=$this->bodQc->evaluateGga($data['gga_bod']); BodControl::create(['analysis_run_id'=>$run->id,'control_type'=>'GGA','control_code'=>'GGA','bod_result'=>$data['gga_bod'],'expected_min'=>$g['lower'],'expected_max'=>$g['upper'],'acceptance_percent'=>30.5/198*100,'status'=>$g['status']]); }
   return $request->expectsJson() ? response()->json(['message'=>'Analisis BOD₅ berhasil disimpan.','data'=>$calc],201) : back()->with('bod_result',$calc)->withInput();
  }
 
  public function calculateUncertainty(Request $request){
-  $data=$request->validate(['precision_sd'=>'required|numeric|min:0','precision_n'=>'required|integer|min:2','bias_sd'=>'nullable|numeric|min:0','bias_n'=>'nullable|integer|min:2','coverage_factor'=>'required|numeric|min:1']);
-  return back()->with('uncertainty_result',$this->calc->topDownUncertainty($data['precision_sd'],$data['precision_n'],$data['bias_sd']??null,$data['bias_n']??null,$data['coverage_factor']))->withInput();
+  $data=$request->validate(['parameter'=>'required|in:DO,BOD5','precision_sd'=>'required|numeric|min:0','precision_n'=>'required|integer|min:2','bias_sd'=>'nullable|numeric|min:0','bias_n'=>'nullable|integer|min:2','coverage_factor'=>'required|numeric|min:1']);
+  $result=$this->calc->topDownUncertainty($data['precision_sd'],$data['precision_n'],$data['bias_sd']??null,$data['bias_n']??null,$data['coverage_factor']);
+  $total=($result['u_precision']**2)+($result['u_bias']**2);
+  $model=UncertaintyModel::create(['code'=>'UNC-'.Str::upper(Str::random(10)),'parameter'=>$data['parameter'],'model_name'=>'Top-down uncertainty '.$data['parameter'],'coverage_factor'=>$data['coverage_factor'],'unit'=>'mg/L','active'=>true,'notes'=>'Precision dan bias dari data QC/validasi.']);
+  UncertaintyComponent::create(['uncertainty_model_id'=>$model->id,'code'=>'PREC','name'=>'Precision (repeatability)','source_type'=>'PRECISION','distribution'=>'normal','standard_uncertainty'=>$result['u_precision'],'sensitivity_coefficient'=>1,'contribution'=>$result['u_precision'],'degrees_of_freedom'=>$data['precision_n']-1,'relative_contribution_percent'=>$total>0?round(($result['u_precision']**2)/$total*100,4):100,'observations'=>['precision_sd'=>$data['precision_sd'],'precision_n'=>$data['precision_n']]]);
+  if($result['u_bias']>0){
+   UncertaintyComponent::create(['uncertainty_model_id'=>$model->id,'code'=>'BIAS','name'=>'Bias (CRM/control)','source_type'=>'BIAS','distribution'=>'normal','standard_uncertainty'=>$result['u_bias'],'sensitivity_coefficient'=>1,'contribution'=>$result['u_bias'],'degrees_of_freedom'=>($data['bias_n']??0)>1?$data['bias_n']-1:null,'relative_contribution_percent'=>$total>0?round(($result['u_bias']**2)/$total*100,4):0,'observations'=>['bias_sd'=>$data['bias_sd']??null,'bias_n'=>$data['bias_n']??null]]);
+  }
+  return back()->with('uncertainty_result',$result)->withInput();
  }
 
  private function saveRun(string $sample,string $parameter,string $method,array $inputs,array $calculation): AnalysisRun{

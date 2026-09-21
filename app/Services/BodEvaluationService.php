@@ -4,7 +4,6 @@ class BodEvaluationService {
  public const BLANK_MAX=0.4;
  public const GGA_TARGET=198.0;
  public const GGA_TOLERANCE=30.5;
- public const RPD_MAX=30.0;
  public function evaluate(float $a1,float $a2,float $b1,float $b2,float $p): array {
   $sample=$a1-$a2;$blank=$b1-$b2;
   return ['sample_depletion'=>round($sample,6),'blank_depletion'=>round($blank,6),'sample_status'=>$sample>=2?'PASS':'FAIL','blank_status'=>($blank>=0&&$blank<self::BLANK_MAX)?'PASS':'FAIL','dilution_factor'=>$p>0?1/$p:null];
