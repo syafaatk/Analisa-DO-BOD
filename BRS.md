@@ -429,3 +429,28 @@ Setiap perubahan kode yang memengaruhi requirement harus mengikuti pola:
 4. Commit dalam perubahan yang sama atau commit dokumentasi terkait.
 
 **BRS.md adalah sumber dokumentasi requirement bisnis yang harus tetap sinkron dengan implementasi.**
+
+# 34. UI/UX Admin React
+Frontend internal laboratory menggunakan React + Vite dengan pola **Admin Dashboard**:
+- Sidebar navigasi berdasarkan role.
+- Header workspace menampilkan laboratorium aktif, user, dan role.
+- Dashboard analysis menjadi halaman utama workspace.
+- Navigasi master data, client, user, dan laboratory management ditampilkan sesuai kewenangan.
+- Layout responsive untuk desktop, tablet, dan mobile.
+- Komponen visual menggunakan card, table, form field, status/feedback area, dan action button yang konsisten.
+- Login dan client portal tetap menggunakan entry point terpisah dari admin workspace.
+- Perubahan UI/UX tidak mengubah formula, workflow approval, tenant isolation, atau business rules analisis.
+
+## NFR UI/UX
+| ID | Requirement | Status |
+|---|---|---|
+| NFR-007 | Admin React dashboard dengan sidebar dan role-aware navigation | Implemented |
+| NFR-008 | Responsive layout desktop/tablet/mobile | Implemented |
+| NFR-009 | Konsistensi visual form, table, card, action, dan feedback | Implemented |
+
+### Changelog
+### v1.1 — 2026-09-21
+- Menerapkan Admin React shell untuk workspace internal.
+- Menambahkan sidebar role-aware, header user/laboratorium, active navigation, dan responsive layout.
+- Memperbarui visual form, table, card, button, dan state feedback.
+- Menempatkan dashboard analisis dan halaman administrasi dalam pola workspace yang konsisten.
