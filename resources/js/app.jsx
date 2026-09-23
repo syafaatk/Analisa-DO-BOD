@@ -11,11 +11,11 @@ function Dashboard(){
  const recent=window.RECENT||[];
  const counts=window.DASH_COUNTS||{};
  const modules=[
-  {t:'Analisis DO',d:'Perhitungan DO, duplo dan RPD (SNI 06-6989.14-2004)',h:'/analysis/do',icon:'◈',c:'#2563eb'},
-  {t:'Analisis BOD₅',d:'BOD5, dilution, QC dan GGA (SNI 6989.72:2009)',h:'/analysis/bod',icon:'◈',c:'#0e9f6e'},
-  {t:'Ketidakpastian Top-Down',d:'Precision, bias, uc dan expanded U',h:'/analysis/uncertainty',icon:'∑',c:'#7c3aed'}
+  {t:'Analisis DO',d:'Perhitungan DO, duplo dan RPD (SNI 06-6989.14-2004)',h:'/analysis/do',icon:'◈',c:'#2BA8A2'},
+  {t:'Analisis BOD₅',d:'BOD5, dilution, QC dan GGA (SNI 6989.72:2009)',h:'/analysis/bod',icon:'◈',c:'#E6B800'},
+  {t:'Ketidakpastian Top-Down',d:'Precision, bias, uc dan expanded U',h:'/analysis/uncertainty',icon:'∑',c:'#EF6C4A'}
  ];
- const stats=[['Total Analisis',counts.total??0,'#2563eb'],['Analisis DO',counts.do??0,'#0e9f6e'],['Analisis BOD₅',counts.bod??0,'#f59e0b'],['Perusahaan',counts.clients??(window.CLIENTS||[]).length,'#7c3aed']];
+ const stats=[['Total Analisis',counts.total??0,'#2BA8A2'],['Analisis DO',counts.do??0,'#3CC4BD'],['Analisis BOD₅',counts.bod??0,'#E6B800'],['Perusahaan',counts.clients??(window.CLIENTS||[]).length,'#EF6C4A']];
  return <div>
   {(window.FLASH_SUCCESS||window.FLASH_ERROR)&&<div className={"notice "+(window.FLASH_ERROR?'notice-error':'notice-success')} style={{marginBottom:16}}>{window.FLASH_ERROR||window.FLASH_SUCCESS}</div>}
   <div className="grid grid-4">{stats.map(s=><div className="card stat-card" key={s[0]}><div className="stat-label">{s[0]}</div><div className="stat-value" style={{color:s[2]}}>{s[1]}</div></div>)}</div>
