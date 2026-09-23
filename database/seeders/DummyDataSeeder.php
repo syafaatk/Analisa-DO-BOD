@@ -238,7 +238,7 @@ class DummyDataSeeder extends Seeder
                     'duplo_titrasi_1' => round($dupTio - 0.01, 3),
                     'duplo_titrasi_2' => round($dupTio + 0.01, 3),
                     'normality' => 0.025,
-                    'winkler_volume_ml' => 300,
+                    'winkler_volume_ml' => 250,
                     'reagent_mnso4_ml' => 1.0,
                     'reagent_alkali_ml' => 1.0,
                     'aliquot_ml' => 50,
@@ -378,21 +378,23 @@ class DummyDataSeeder extends Seeder
         $legacy = AnalysisRun::withoutGlobalScopes()->where('parameter', 'DO')->get();
         foreach ($legacy as $run) {
             $in = $run->inputs ?? [];
-            if (isset($in['simplo_titrasi_1']) || !isset($in['thiosulfate_ml'])) {
+            if (isset($in['thiosulfate_ml'])) {
+                $simplo = $in['thiosulfate_ml'];
+                $duplo = $in['thiosulfate_duplo_ml'] ?? $simplo;
+                $in['simplo_titrasi_1'] = $simplo;
+                $in['simplo_titrasi_2'] = $simplo;
+                $in['duplo_titrasi_1'] = $duplo;
+                $in['duplo_titrasi_2'] = $duplo;
+                unset($in['thiosulfate_ml'], $in['thiosulfate_duplo_ml']);
+            }
+            if (!isset($in['simplo_titrasi_1'])) {
                 continue;
             }
-            $simplo = $in['thiosulfate_ml'];
-            $duplo = $in['thiosulfate_duplo_ml'] ?? $simplo;
-            $in['simplo_titrasi_1'] = $simplo;
-            $in['simplo_titrasi_2'] = $simplo;
-            $in['duplo_titrasi_1'] = $duplo;
-            $in['duplo_titrasi_2'] = $duplo;
-            unset($in['thiosulfate_ml'], $in['thiosulfate_duplo_ml']);
             $calc = $this->calc->dissolvedOxygenDuo(
                 $in['simplo_titrasi_1'], $in['simplo_titrasi_2'],
                 $in['duplo_titrasi_1'], $in['duplo_titrasi_2'],
-                $in['normality'], $in['winkler_volume_ml'],
-                $in['reagent_mnso4_ml'], $in['reagent_alkali_ml'], $in['aliquot_ml']
+                $in['normality'], $in['winkler_volume_ml'] ?? 250,
+                $in['reagent_mnso4_ml'] ?? 1.0, $in['reagent_alkali_ml'] ?? 1.0, $in['aliquot_ml'] ?? 50
             );
             $run->timestamps = false;
             $run->update(['inputs' => $in, 'calculation' => $calc]);

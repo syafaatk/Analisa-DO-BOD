@@ -11,7 +11,7 @@ class LaboratoryCalculationService
         $factor=$winklerVolumeMl/$den;
         $vAvg=($titrasi1+$titrasi2)/2;
         $do=($vAvg*$normality*8000.0*$factor)/$aliquotMl;
-        return ['result'=>round($do,6),'v_avg'=>round($vAvg,6),'factor'=>round($factor,8),'formula'=>'V × N × 8000 × F / aliquot'];
+        return ['result'=>round($do,2),'average'=>round($vAvg,2),'factor'=>round($factor,2),'formula'=>'V × N × 8000 × F / aliquot'];
     }
     public function dissolvedOxygenDuo(float $simploT1,float $simploT2,float $duploT1,float $duploT2,float $normality,float $winklerVolumeMl,float $reagentMnso4Ml=1.0,float $reagentAlkaliMl=1.0,float $aliquotMl=50.0): array
     {
@@ -19,10 +19,10 @@ class LaboratoryCalculationService
         $d=$this->dissolvedOxygen($duploT1,$duploT2,$normality,$winklerVolumeMl,$reagentMnso4Ml,$reagentAlkaliMl,$aliquotMl);
         $rpd=$this->rpd($s['result'],$d['result']);
         return [
-            'rpd'=>$rpd,
-            'simplo'=>['factor'=>$s['factor'],'simplo_result'=>$s['result'],'formula'=>$s['formula']],
-            'duplo'=>['factor'=>$d['factor'],'duplo_result'=>$d['result'],'formula'=>$d['formula']],
-            'last_result'=>round(($s['result']+$d['result'])/2,6),
+            'rpd'=>round($rpd,2),
+            'simplo'=>['factor'=>$s['factor'],'simplo_average'=>$s['average'],'simplo_result'=>$s['result'],'formula'=>$s['formula']],
+            'duplo'=>['factor'=>$d['factor'],'duplo_average'=>$d['average'],'duplo_result'=>$d['result'],'formula'=>$d['formula']],
+            'last_result'=>round(($s['result']+$d['result'])/2,2),
             'formula'=>'(simplo_result + duplo_result) / 2',
             'qc_status'=>$rpd<=10?'PASS':'REVIEW',
         ];
