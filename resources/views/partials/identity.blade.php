@@ -1,0 +1,1 @@
+window.LAB_USER_NAME=@json(session('lab_user.name'));window.LAB_USER_ROLE=@json(session('lab_user.role'));window.LABORATORY_NAME=@json(session('laboratory_name',session('lab_user.laboratory_name','')));window.FLASH_SUCCESS=@json(session('success'));window.FLASH_ERROR=@json(session('error'));window.FLASH_INFO=@json(session('info'));

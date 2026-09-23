@@ -1,0 +1,4 @@
+<?php
+namespace App\Notifications;
+use Illuminate\Bus\Queueable;use Illuminate\Notifications\Messages\MailMessage;use Illuminate\Notifications\Notification;use App\Models\AnalysisRun;
+class ApprovedReportNotification extends Notification {use Queueable;public function __construct(public AnalysisRun $analysis){}public function via(object $notifiable):array{return ['mail'];}public function toMail(object $notifiable):MailMessage{$url=url('/client/reports/'.$this->analysis->id);return (new MailMessage)->subject('Laporan Analisa '.$this->analysis->report_number.' telah disetujui')->greeting('Laporan analisa telah tersedia')->line('Laporan '.$this->analysis->report_number.' untuk sample '.$this->analysis->sample_code.' telah disetujui dan dapat dilihat melalui portal perusahaan.')->action('Lihat Laporan',$url)->line('Silakan login menggunakan akun portal perusahaan Anda.');}}
