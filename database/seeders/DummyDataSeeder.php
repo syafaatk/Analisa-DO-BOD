@@ -30,6 +30,7 @@ class DummyDataSeeder extends Seeder
     {
         $this->calc = app(LaboratoryCalculationService::class);
         $this->bodQc = app(BodEvaluationService::class);
+        $this->migrateLegacyDoRuns();
 
         $labs = [
             ['code' => 'LAB-DEFAULT', 'name' => 'Default Laboratory', 'address' => 'Jl. Laboratorium No. 1, Bandung', 'phone' => '022-7201111', 'email' => 'lab@default.local',
@@ -228,24 +229,21 @@ class DummyDataSeeder extends Seeder
             $analysedAt = now()->subDays($spec['days'])->setTime(9 + $idx % 8, 15 + $idx * 7 % 40);
 
             if ($param === 'DO') {
+                $dupTio = $spec['dup'] ?? $spec['tio'];
                 $inputs = [
                     'client_id' => $spec['client'] ? ($clients[$spec['client']] ?? null) : null,
                     'sample_code' => $sampleCode,
-                    'thiosulfate_ml' => $spec['tio'],
-                    'thiosulfate_duplo_ml' => $spec['dup'] ?? null,
+                    'simplo_titrasi_1' => round($spec['tio'] - 0.01, 3),
+                    'simplo_titrasi_2' => round($spec['tio'] + 0.01, 3),
+                    'duplo_titrasi_1' => round($dupTio - 0.01, 3),
+                    'duplo_titrasi_2' => round($dupTio + 0.01, 3),
                     'normality' => 0.025,
                     'winkler_volume_ml' => 300,
                     'reagent_mnso4_ml' => 1.0,
                     'reagent_alkali_ml' => 1.0,
                     'aliquot_ml' => 50,
                 ];
-                $calc = $this->calc->dissolvedOxygen($inputs['thiosulfate_ml'], $inputs['normality'], $inputs['winkler_volume_ml'], $inputs['reagent_mnso4_ml'], $inputs['reagent_alkali_ml'], $inputs['aliquot_ml']);
-                if (!empty($inputs['thiosulfate_duplo_ml'])) {
-                    $duplo = $this->calc->dissolvedOxygen($inputs['thiosulfate_duplo_ml'], $inputs['normality'], $inputs['winkler_volume_ml'], $inputs['reagent_mnso4_ml'], $inputs['reagent_alkali_ml'], $inputs['aliquot_ml']);
-                    $calc['duplo'] = $duplo;
-                    $calc['rpd'] = $this->calc->rpd($calc['result'], $duplo['result']);
-                    $calc['qc_status'] = $calc['rpd'] <= 10 ? 'PASS' : 'REVIEW';
-                }
+                $calc = $this->calc->dissolvedOxygenDuo($inputs['simplo_titrasi_1'], $inputs['simplo_titrasi_2'], $inputs['duplo_titrasi_1'], $inputs['duplo_titrasi_2'], $inputs['normality'], $inputs['winkler_volume_ml'], $inputs['reagent_mnso4_ml'], $inputs['reagent_alkali_ml'], $inputs['aliquot_ml']);
                 $sampleMatrix = $sample?->matrix;
                 $method = 'SNI 06-6989.14-2004';
             } else {
@@ -372,6 +370,32 @@ class DummyDataSeeder extends Seeder
                     $this->audit($run, 'REVIEW', 'READY_FOR_REVIEW', 'REVISION_REQUIRED', 'Perlu perbaikan QC.', $lab->users()->where('role', 'supervisor')->value('name') ?? 'Supervisor');
                 }
             }
+        }
+    }
+
+    private function migrateLegacyDoRuns(): void
+    {
+        $legacy = AnalysisRun::withoutGlobalScopes()->where('parameter', 'DO')->get();
+        foreach ($legacy as $run) {
+            $in = $run->inputs ?? [];
+            if (isset($in['simplo_titrasi_1']) || !isset($in['thiosulfate_ml'])) {
+                continue;
+            }
+            $simplo = $in['thiosulfate_ml'];
+            $duplo = $in['thiosulfate_duplo_ml'] ?? $simplo;
+            $in['simplo_titrasi_1'] = $simplo;
+            $in['simplo_titrasi_2'] = $simplo;
+            $in['duplo_titrasi_1'] = $duplo;
+            $in['duplo_titrasi_2'] = $duplo;
+            unset($in['thiosulfate_ml'], $in['thiosulfate_duplo_ml']);
+            $calc = $this->calc->dissolvedOxygenDuo(
+                $in['simplo_titrasi_1'], $in['simplo_titrasi_2'],
+                $in['duplo_titrasi_1'], $in['duplo_titrasi_2'],
+                $in['normality'], $in['winkler_volume_ml'],
+                $in['reagent_mnso4_ml'], $in['reagent_alkali_ml'], $in['aliquot_ml']
+            );
+            $run->timestamps = false;
+            $run->update(['inputs' => $in, 'calculation' => $calc]);
         }
     }
 

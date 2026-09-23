@@ -46,10 +46,9 @@ class AnalysisRecordController extends Controller {
    $clientId=$validated['client_id'];
   }
   $old=$analysis->inputs??[];$fromStatus=$analysis->status?:'DRAFT';
-  if($analysis->parameter==='DO'){
-   $data=$base+$request->validate(['thiosulfate_ml'=>'required|numeric|min:0.000001','thiosulfate_duplo_ml'=>'nullable|numeric|min:0.000001','normality'=>'required|numeric|min:0.000001','winkler_volume_ml'=>'required|numeric|min:2.000001','reagent_mnso4_ml'=>'required|numeric|min:0','reagent_alkali_ml'=>'required|numeric|min:0','aliquot_ml'=>'required|numeric|min:0.000001']);
-   $newCalc=$calc->dissolvedOxygen($data['thiosulfate_ml'],$data['normality'],$data['winkler_volume_ml'],$data['reagent_mnso4_ml'],$data['reagent_alkali_ml'],$data['aliquot_ml']);
-   if(!empty($data['thiosulfate_duplo_ml'])){$d=$calc->dissolvedOxygen($data['thiosulfate_duplo_ml'],$data['normality'],$data['winkler_volume_ml'],$data['reagent_mnso4_ml'],$data['reagent_alkali_ml'],$data['aliquot_ml']);$newCalc['duplo']=$d;$newCalc['rpd']=$calc->rpd($newCalc['result'],$d['result']);$newCalc['qc_status']=$newCalc['rpd']<=10?'PASS':'REVIEW';}
+   if($analysis->parameter==='DO'){
+    $data=$base+$request->validate(['simplo_titrasi_1'=>'required|numeric|min:0.000001','simplo_titrasi_2'=>'required|numeric|min:0.000001','duplo_titrasi_1'=>'required|numeric|min:0.000001','duplo_titrasi_2'=>'required|numeric|min:0.000001','normality'=>'required|numeric|min:0.000001','winkler_volume_ml'=>'required|numeric|min:2.000001','reagent_mnso4_ml'=>'required|numeric|min:0','reagent_alkali_ml'=>'required|numeric|min:0','aliquot_ml'=>'required|numeric|min:0.000001']);
+    $newCalc=$calc->dissolvedOxygenDuo($data['simplo_titrasi_1'],$data['simplo_titrasi_2'],$data['duplo_titrasi_1'],$data['duplo_titrasi_2'],$data['normality'],$data['winkler_volume_ml'],$data['reagent_mnso4_ml'],$data['reagent_alkali_ml'],$data['aliquot_ml']);
   } else {
    $data=$base+$request->validate([
     'a1'=>'required|numeric','a2'=>'required|numeric','b1'=>'required|numeric','b2'=>'required|numeric','vb'=>'required|numeric|min:0','vc'=>'required|numeric|min:0','p'=>'required|numeric|min:0.000001',

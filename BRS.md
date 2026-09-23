@@ -180,7 +180,7 @@ Kode client harus unik dalam laboratorium terkait.
 
 # 12. Modul Analisis DO
 **Metode:** SNI 06-6989.14-2004.
-Input: client_id, sample_code, thiosulfate_ml, thiosulfate_duplo_ml, normality, winkler_volume_ml, reagent_mnso4_ml, reagent_alkali_ml, aliquot_ml.
+Input: client_id, sample_code, simplo_titrasi_1, simplo_titrasi_2, duplo_titrasi_1, duplo_titrasi_2, normality, winkler_volume_ml, reagent_mnso4_ml, reagent_alkali_ml, aliquot_ml.
 
 Formula:
 DO (mg/L) = V × N × 8000 × F / Va
